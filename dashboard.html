@@ -133,16 +133,16 @@
         listEl.innerHTML = notifications.map(n => `
           <div class="notification-item">
             <div class="header">
-              <span class="title">${'${escapeHtml(n.title)}'}</span>
+              <span class="title">${escapeHtml(n.title)}</span>
               <span class="badge badge-approved">Aktivní</span>
             </div>
             <div class="meta-row">
               <div class="meta">
-                <span><i data-lucide="calendar" class="icon-sm"></i> ${'${formatDate(n.createdAt)}'}</span>
-                ${'${n.link ? `<span><i data-lucide="link" class="icon-sm"></i> <a href="${escapeHtml(n.link)}" target="_blank">Odkaz</a></span>` : ""'}
-                 <span>Exp: ${'${formatDate(n.expiresAt)}'}</span>
+                <span><i data-lucide="calendar" class="icon-sm"></i> ${formatDate(n.createdAt)}</span>
+                ${n.link ? `<span><i data-lucide="link" class="icon-sm"></i> <a href="${escapeHtml(n.link)}" target="_blank">Odkaz</a></span>` : ""}
+                 <span>Exp: ${formatDate(n.expiresAt)}</span>
               </div>
-              <button class="btn btn-outline btn-sm" onclick="deleteNotification('${'${n.id}'}')">
+              <button class="btn btn-outline btn-sm" onclick="deleteNotification('${n.id}')">
                 <i data-lucide="trash-2"></i> Smazat
               </button>
             </div>
@@ -177,7 +177,7 @@
         // We need to send it as form data or raw blob depending on how we want to parse. 
         // Our GAS script uses e.postData.contents
         
-        const response = await fetch(`${API_URL}?action=create&token=${'${encodeURIComponent(token)}'}`, {
+        const response = await fetch(`${API_URL}?action=create&token=${encodeURIComponent(token)}`, {
           method: 'POST',
           body: JSON.stringify(payload)
         });
@@ -203,7 +203,7 @@
       if (!confirm('Opravdu smazat?')) return;
       
       try {
-        const response = await fetch(`${API_URL}?action=delete&id=${'${id}'}&token=${'${encodeURIComponent(token)}'}`, {
+        const response = await fetch(`${API_URL}?action=delete&id=${id}&token=${encodeURIComponent(token)}`, {
           method: 'POST'
         });
         const result = await response.json();
