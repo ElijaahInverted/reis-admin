@@ -127,7 +127,7 @@
 
     // Logout
     document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.href = 'index.html';
     });
 
@@ -212,10 +212,10 @@
       btn.disabled = true;
       btn.textContent = 'Odesílání...';
 
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
 
       try {
-        const { error } = await supabase.from('notifications').insert([{
+        const { error } = await supabaseClient.from('notifications').insert([{
           association_id: userAssociation.association_id,
           title: document.getElementById('title').value,
           body: document.getElementById('title').value,
@@ -249,7 +249,7 @@
       if (!confirm('Opravdu smazat?')) return;
       
       try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
           .from('notifications')
           .delete()
           .eq('id', id);
