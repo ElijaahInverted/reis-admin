@@ -4,6 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:css": "tailwindcss -i input.css -o styles.css --minify",
+    "dev": "tailwindcss -i input.css -o styles.css --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
