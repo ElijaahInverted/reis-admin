@@ -87,13 +87,17 @@
   <script>
     const SUPABASE_URL = 'https://zvbpgkmnrqyprtkyxkwn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2YnBna21ucnF5cHJ0a3l4a3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDU5NjYsImV4cCI6MjA4NDMyMTk2Nn0.8eaGOhlZHUf9uOlb6vL_P5D61bILFdgSu245kaIhMvQ';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Create Supabase client only if not already exists
+    if (typeof window.supabaseClient === 'undefined') {
+      window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    const supabaseClient = window.supabaseClient;
 
     let userAssociation = null;
 
     // Check auth and load user account
     (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       
       if (!session) {
         window.location.href = 'index.html';
@@ -101,7 +105,7 @@
       }
 
       // Get user's association from database
-      const { data: account, error } = await supabase
+      const { data: account, error } = await supabaseClient
         .from('spolky_accounts')
         .select('association_id, association_name')
         .eq('email', session.user.email)
@@ -146,7 +150,7 @@
       }
 
       try {
-        const { data: notifications, error } = await supabase
+        const { data: notifications, error } = await supabaseClient
           .from('notifications')
           .select('*')
           .eq('association_id', userAssociation.association_id)
