@@ -15,10 +15,10 @@
   <div class="container">
     <nav class="nav">
       <div class="logo">
-        <h1 style="font-size: 1.5rem;">reIS Admin (Sheets)</h1>
+        <h1 style="font-size: 1.5rem;">reIS Admin (Supabase)</h1>
       </div>
       <div class="nav-user">
-        <span id="username-display">Admin</span>
+        <span id="username-display">Načítání...</span>
         <button class="btn btn-outline" id="logout-btn">Odhlásit</button>
       </div>
     </nav>
@@ -42,7 +42,7 @@
     <div class="card">
       <div class="card-header">
         <h2>Nová notifikace</h2>
-        <p>Vytvořte zprávu pro studenty (max 1x za 7 dní)</p>
+        <p>Vytvořte zprávu pro své studenty</p>
       </div>
 
       <form id="notification-form">
@@ -83,20 +83,47 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    // THE GOOGLE APPS SCRIPT URL
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwSgl46V4HnYiAnE7ZET2lPP5v0ekV9G_KZkdREkZ2GrIpOlUsaHGn_1JmIh1XCqcqD/exec';
-    
-    let token = localStorage.getItem('reis_token');
-    if (token) token = token.trim();
+    const SUPABASE_URL = 'https://zvbpgkmnrqyprtkyxkwn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2YnBna21ucnF5cHJ0a3l4a3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDU5NjYsImV4cCI6MjA4NDMyMTk2Nn0.8eaGOhlZHUf9uOlb6vL_P5D61bILFdgSu245kaIhMvQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    if (!token) {
-      window.location.href = 'index.html';
-    }
+    let userAssociation = null;
+
+    // Check auth and load user account
+    (async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Get user's association from database
+      const { data: account, error } = await supabase
+        .from('spolky_accounts')
+        .select('association_id, association_name')
+        .eq('email', session.user.email)
+        .single();
+
+      if (error || !account) {
+        console.error('Failed to load account:', error);
+        document.getElementById('error-alert').textContent = 'Chyba: účet nenalezen';
+        document.getElementById('error-alert').classList.remove('hidden');
+        return;
+      }
+
+      userAssociation = account;
+      document.getElementById('username-display').textContent = account.association_name;
+      
+      // Load notifications
+      loadData();
+    })();
 
     // Logout
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      localStorage.removeItem('reis_token');
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
       window.location.href = 'index.html';
     });
 
@@ -108,25 +135,34 @@
 
     // Char counter
     document.getElementById('title').addEventListener('input', (e) => {
-      const count = e.target.value.length;
-      document.getElementById('title-count').textContent = count;
+      document.getElementById('title-count').textContent = e.target.value.length;
     });
 
-    // Load Data
+    // Load notifications
     async function loadData() {
-      try {
-        // Fetch from GAS
-        const response = await fetch(`${API_URL}?action=get_notifications`);
-        const notifications = await response.json();
-        
-        // Update Stats
-        document.getElementById('stat-active').textContent = notifications.length;
-        document.getElementById('stat-total').textContent = notifications.length; // Simple stat for now
+      if (!userAssociation) {
+        console.log('User association not loaded yet');
+        return;
+      }
 
-        // Render List
+      try {
+        const { data: notifications, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('association_id', userAssociation.association_id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Update stats
+        const active = notifications.filter(n => new Date(n.expires_at) > new Date());
+        document.getElementById('stat-active').textContent = active.length;
+        document.getElementById('stat-total').textContent = notifications.length;
+
+        // Render list
         const listEl = document.getElementById('notifications-list');
         if (notifications.length === 0) {
-          listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Žádné aktivní notifikace</p>';
+          listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Žádné notifikace</p>';
           return;
         }
 
@@ -134,13 +170,15 @@
           <div class="notification-item">
             <div class="header">
               <span class="title">${escapeHtml(n.title)}</span>
-              <span class="badge badge-approved">Aktivní</span>
+              <span class="badge ${new Date(n.expires_at) > new Date() ? 'badge-approved' : 'badge-rejected'}">
+                ${new Date(n.expires_at) > new Date() ? 'Aktivní' : 'Expirováno'}
+              </span>
             </div>
             <div class="meta-row">
               <div class="meta">
-                <span><i data-lucide="calendar" class="icon-sm"></i> ${formatDate(n.createdAt)}</span>
-                ${n.link ? `<span><i data-lucide="link" class="icon-sm"></i> <a href="${escapeHtml(n.link)}" target="_blank">Odkaz</a></span>` : ""}
-                 <span>Exp: ${formatDate(n.expiresAt)}</span>
+                <span><i data-lucide="calendar" class="icon-sm"></i> ${formatDate(n.created_at)}</span>
+                ${n.link ? `<span><i data-lucide="link" class="icon-sm"></i> <a href="${escapeHtml(n.link)}" target="_blank">Odkaz</a></span>` : ''}
+                <span>Exp: ${formatDate(n.expires_at)}</span>
               </div>
               <button class="btn btn-outline btn-sm" onclick="deleteNotification('${n.id}')">
                 <i data-lucide="trash-2"></i> Smazat
@@ -152,41 +190,45 @@
 
       } catch (error) {
         console.error('Load failed:', error);
-        document.getElementById('error-alert').textContent = 'Chyba načítání dat z Google Sheets';
+        document.getElementById('error-alert').textContent = 'Chyba načítání: ' + error.message;
         document.getElementById('error-alert').classList.remove('hidden');
       }
     }
 
-    // Submit
+    // Create notification
     document.getElementById('notification-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      if (!userAssociation) {
+        alert('Účet nebyl načten');
+        return;
+      }
+
       const btn = document.getElementById('submit-btn');
       btn.disabled = true;
       btn.textContent = 'Odesílání...';
 
-      const payload = {
-        title: document.getElementById('title').value,
-        body: document.getElementById('title').value, // Simple mode: body = title
-        link: document.getElementById('link').value,
-        expiresAt: new Date(document.getElementById('expiresAt').value).toISOString(),
-        author: 'admin'
-      };
+      const { data: { session } } = await supabase.auth.getSession();
 
       try {
-        // GAS requires POST data as stringified JSON in body, handled by the doPost(e) logic we wrote
-        // We need to send it as form data or raw blob depending on how we want to parse. 
-        // Our GAS script uses e.postData.contents
-        
-        const response = await fetch(`${API_URL}?action=create&token=${encodeURIComponent(token)}`, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-        
-        const result = await response.json();
-        if (result.error) throw new Error(result.error);
+        const { error } = await supabase.from('notifications').insert([{
+          association_id: userAssociation.association_id,
+          title: document.getElementById('title').value,
+          body: document.getElementById('title').value,
+          link: document.getElementById('link').value || null,
+          expires_at: new Date(document.getElementById('expiresAt').value).toISOString(),
+          created_by: session.user.email,
+          priority: 'normal'
+        }]);
 
-        document.getElementById('success-alert').textContent = '✅ Notifikace uložena do Google Sheetu';
+        if (error) throw error;
+
+        document.getElementById('success-alert').textContent = '✅ Notifikace uložena';
         document.getElementById('success-alert').classList.remove('hidden');
+        setTimeout(() => {
+          document.getElementById('success-alert').classList.add('hidden');
+        }, 3000);
+        
         document.getElementById('notification-form').reset();
         loadData();
 
@@ -198,17 +240,17 @@
       }
     });
 
-    // Delete
+    // Delete notification
     window.deleteNotification = async (id) => {
       if (!confirm('Opravdu smazat?')) return;
       
       try {
-        const response = await fetch(`${API_URL}?action=delete&id=${id}&token=${encodeURIComponent(token)}`, {
-          method: 'POST'
-        });
-        const result = await response.json();
-        if (result.error) throw new Error(result.error);
-        
+        const { error } = await supabase
+          .from('notifications')
+          .delete()
+          .eq('id', id);
+
+        if (error) throw error;
         loadData();
       } catch (error) {
         alert('Chyba mazání: ' + error.message);
@@ -225,8 +267,7 @@
       return new Date(iso).toLocaleDateString('cs-CZ');
     }
 
-    // Init
-    loadData();
+    // Init lucide icons
     lucide.createIcons();
   </script>
 </body>

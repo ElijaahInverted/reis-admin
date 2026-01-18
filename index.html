@@ -26,14 +26,13 @@
       <div id="error-alert" class="alert alert-error hidden"></div>
 
       <form id="login-form">
-        <!-- We only need password for the shared secret auth -->
-        <div class="form-group hidden">
-          <label for="username">Uživatelské jméno</label>
-          <input type="text" id="username" name="username" value="admin" autocomplete="username">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" placeholder="admin@supef.cz" required autocomplete="email">
         </div>
 
         <div class="form-group">
-          <label for="password">Heslo (Token)</label>
+          <label for="password">Heslo</label>
           <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
         </div>
 
@@ -44,40 +43,40 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwSgl46V4HnYiAnE7ZET2lPP5v0ekV9G_KZkdREkZ2GrIpOlUsaHGn_1JmIh1XCqcqD/exec';
+    const SUPABASE_URL = 'https://zvbpgkmnrqyprtkyxkwn.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2YnBna21ucnF5cHJ0a3l4a3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDU5NjYsImV4cCI6MjA4NDMyMTk2Nn0.8eaGOhlZHUf9uOlb6vL_P5D61bILFdgSu245kaIhMvQ';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Check if already logged in
-    const token = localStorage.getItem('reis_token');
-    if (token) {
-      window.location.href = 'dashboard.html';
-    }
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        window.location.href = 'dashboard.html';
+      }
+    });
 
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const submitBtn = document.getElementById('submit-btn');
       const errorAlert = document.getElementById('error-alert');
-      const password = document.getElementById('password').value.trim();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
       submitBtn.disabled = true;
       submitBtn.textContent = 'Ověřování...';
       errorAlert.classList.add('hidden');
 
       try {
-        // We use the "login" action on our GAS script
-        // Note: GAS `doGet/doPost` redirects usually handled by browser, but `fetch` follows them.
-        // Our script returns JSON.
-        
-        const response = await fetch(`${API_URL}?action=login&password=${encodeURIComponent(password)}`);
-        const data = await response.json();
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
 
-        if (data.error) {
-          throw new Error(data.error);
-        }
+        if (error) throw error;
 
-        // Success
-        localStorage.setItem('reis_token', data.token); // The token IS the password in this simple model
+        // Success - redirect to dashboard
         window.location.href = 'dashboard.html';
 
       } catch (error) {
