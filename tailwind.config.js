@@ -1,5 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-module.exports = {
+import daisyui from 'daisyui';
+
+export default {
   content: ["./*.{html,js}"],
   theme: {
     // Override default font sizes (rem → px)
@@ -106,7 +108,7 @@ module.exports = {
         },
     },
   },
-  plugins: [require("daisyui")],
+  plugins: [daisyui],
   daisyui: {
     themes: [
         {
@@ -150,5 +152,23 @@ module.exports = {
             },
         },
     ],
+    base: true,      // Include base component styles
+    styled: true,    // Include component styles
+    utils: true,     // Include utility classes
+    logs: false,     // Disable console logs
   },
+  safelist: [
+    // DaisyUI components
+    'btn', 'btn-primary', 'btn-secondary', 'btn-ghost', 'btn-sm', 'btn-lg', 'btn-circle', 'btn-outline',
+    'card', 'card-body', 'card-title', 'card-actions',
+    'input', 'input-bordered',
+    'alert', 'alert-success', 'alert-error', 'alert-warning', 'alert-info',
+    'modal', 'modal-box', 'modal-backdrop',
+    'badge', 'badge-primary',
+    'skeleton',
+    'navbar', 'menu',
+    'form-control', 'label', 'label-text',
+    'loading', 'loading-spinner', 'loading-xs', 'loading-sm', 'loading-md', 'loading-lg',
+    'toast',
+  ],
 }

@@ -15,7 +15,7 @@
   <div class="container">
     <nav class="nav">
       <div class="logo">
-        <h1 class="text-2xl font-bold">reIS Admin</h1>
+        <h1 style="font-size: 1.5rem;">reIS Admin</h1>
       </div>
       <div class="nav-user">
         <span id="username-display"></span>
@@ -34,19 +34,19 @@
       </div>
 
       <div id="pending-list" class="notification-list">
-        <p class="text-base-content/50 text-center">Načítání...</p>
+        <p style="color: var(--text-muted); text-align: center;">Načítání...</p>
       </div>
     </div>
 
     <!-- All approved -->
-    <div class="card mt-6">
+    <div class="card" style="margin-top: 1.5rem;">
       <div class="card-header">
         <h2><i data-lucide="check-circle" class="icon"></i> Schválené notifikace</h2>
         <p>Aktivní notifikace viditelné studentům</p>
       </div>
 
       <div id="approved-list" class="notification-list">
-        <p class="text-base-content/50 text-center">Načítání...</p>
+        <p style="color: var(--text-muted); text-align: center;">Načítání...</p>
       </div>
     </div>
   </div>
@@ -104,7 +104,7 @@
         const notifications = await response.json();
         
         if (notifications.length === 0) {
-          listEl.innerHTML = '<p class="text-base-content/50 text-center">🎉 Žádné čekající notifikace</p>';
+          listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center;">🎉 Žádné čekající notifikace</p>';
           return;
         }
 
@@ -128,7 +128,7 @@
               <button class="btn btn-error" onclick="rejectNotification('${n.id}')">
                 <i data-lucide="x"></i> Zamítnout
               </button>
-              <button class="btn btn-outline flex-[0.5]" onclick="deleteNotification('${n.id}')">
+              <button class="btn btn-outline" onclick="deleteNotification('${n.id}')" style="flex: 0.5;">
                 <i data-lucide="trash-2"></i>
               </button>
             </div>
@@ -137,7 +137,7 @@
         lucide.createIcons();
       } catch (error) {
         console.error('Failed to load pending:', error);
-        listEl.innerHTML = '<p class="text-error">Nepodařilo se načíst notifikace</p>';
+        listEl.innerHTML = '<p style="color: var(--error);">Nepodařilo se načíst notifikace</p>';
       }
     }
 
@@ -150,7 +150,7 @@
         const notifications = await response.json();
         
         if (notifications.length === 0) {
-          listEl.innerHTML = '<p class="text-base-content/50 text-center">Žádné aktivní notifikace</p>';
+          listEl.innerHTML = '<p style="color: var(--text-muted); text-align: center;">Žádné aktivní notifikace</p>';
           return;
         }
 
@@ -175,7 +175,7 @@
         lucide.createIcons();
       } catch (error) {
         console.error('Failed to load approved:', error);
-        listEl.innerHTML = '<p class="text-error">Nepodařilo se načíst notifikace</p>';
+        listEl.innerHTML = '<p style="color: var(--error);">Nepodařilo se načíst notifikace</p>';
       }
     }
 
