@@ -5,28 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>reIS Admin</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            // These allow utility usage like bg-brand-primary
-            brand: {
-              primary: '#79be15',
-              dark: '#444444',
-            }
-          },
-          fontFamily: {
-            inter: ['Inter', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
+  <link href="styles.css" rel="stylesheet" type="text/css" />
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
     body { font-family: 'Inter', sans-serif; }
@@ -69,7 +48,7 @@
     .input:focus { border-color: #79be15 !important; outline-color: #79be15 !important; }
   </style>
 </head>
-<body class="min-h-screen bg-base-300 text-base-content font-inter selection:bg-[#79be15] selection:text-white">
+<body class="min-h-screen bg-base-300 text-base-content font-inter selection:bg-brand-primary selection:text-white">
 
   <!-- Navbar -->
   <div class="navbar bg-base-100/50 backdrop-blur border-b border-base-content/10 sticky top-0 z-50 px-6">

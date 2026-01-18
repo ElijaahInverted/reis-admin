@@ -5,50 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>reIS Admin</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              primary: '#79be15',
-              dark: '#444444',
-            }
-          },
-          fontFamily: {
-            inter: ['Inter', 'sans-serif'],
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    
-    /* OVERRIDES for Mendelu Green */
-    :root, [data-theme] {
-      --p: 84.8 79.5% 41.4%; 
-      --b1: 217.2 32.6% 17.5%;
-      --b2: 220 26% 14%;
-      --b3: 222.2 47.4% 11.2%;
-      --bc: 219 14.1% 94.9%;
-    }
-    
-    .btn-primary {
-      background-color: #79be15 !important;
-      border-color: #79be15 !important;
-      color: white !important;
-    }
-    .btn-primary:hover {
-      background-color: #6aab12 !important;
-      border-color: #6aab12 !important;
-    }
-    .input:focus { border-color: #79be15 !important; outline-color: #79be15 !important; }
-    .text-primary { color: #79be15 !important; }
-  </style>
+  <link href="styles.css" rel="stylesheet" type="text/css" />
 </head>
 <body class="min-h-screen flex items-center justify-center p-4 bg-base-300">
 

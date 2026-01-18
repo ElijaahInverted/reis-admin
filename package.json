@@ -1,0 +1,27 @@
+{
+  "name": "reis-admin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/reis-mendelu/reis-admin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/reis-mendelu/reis-admin/issues"
+  },
+  "homepage": "https://github.com/reis-mendelu/reis-admin#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.4.23",
+    "daisyui": "^5.5.14",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19"
+  }
+}
