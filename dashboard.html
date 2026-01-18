@@ -189,6 +189,8 @@
               <div class="meta">
                 <span><i data-lucide="calendar" class="icon-sm"></i> ${formatDate(n.created_at)}</span>
                 ${n.link ? `<span><i data-lucide="link" class="icon-sm"></i> <a href="${escapeHtml(n.link)}" target="_blank">Odkaz</a></span>` : ''}
+                <span><i data-lucide="eye" class="icon-sm"></i> ${n.view_count || 0}</span>
+                <span><i data-lucide="mouse-pointer-2" class="icon-sm"></i> ${n.click_count || 0}</span>
                 <span>Exp: ${formatDate(n.expires_at)}</span>
               </div>
               <button class="btn btn-outline btn-sm" onclick="deleteNotification('${n.id}')">
