@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="cs" data-theme="dark">
+<html lang="cs" data-theme="mendelu-dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +7,82 @@
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              primary: '#79be15',
+              'primary-hover': '#6aab12',
+              accent: '#8DC843',
+              'accent-hover': '#7db83a',
+              dark: '#444444',
+            },
+            mendelu: {
+              green: '#79be15',
+              light: '#A0D25A',
+              dark: '#444444',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          }
+        }
+      },
+      daisyui: {
+        themes: [
+          {
+            mendelu: {
+              "primary": "#79be15",
+              "primary-content": "#ffffff",
+              "secondary": "#8DC843",
+              "secondary-content": "#ffffff",
+              "accent": "#00548f",
+              "accent-content": "#ffffff",
+              "neutral": "#444444",
+              "neutral-content": "#ffffff",
+              "base-100": "#ffffff",
+              "base-200": "#f9fafb",
+              "base-300": "#f3f4f6",
+              "base-content": "#111827",
+              "info": "#3b82f6",
+              "success": "#22c55e",
+              "warning": "#f59e0b",
+              "error": "#ef4444",
+            },
+          },
+          {
+            "mendelu-dark": {
+              "primary": "#79be15",
+              "primary-content": "#ffffff",
+              "secondary": "#8DC843",
+              "secondary-content": "#ffffff",
+              "accent": "#3b82f6",
+              "accent-content": "#ffffff",
+              "neutral": "#1f2937",
+              "neutral-content": "#d1d5db",
+              "base-100": "#1f2937",
+              "base-200": "#111827",
+              "base-300": "#0f172a",
+              "base-content": "#f3f4f6",
+              "info": "#3b82f6",
+              "success": "#22c55e",
+              "warning": "#f59e0b",
+              "error": "#ef4444",
+            },
+          },
+        ],
+      }
+    }
+  </script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
-    .glass-effect { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); }
+    body { font-family: 'Inter', sans-serif; }
   </style>
 </head>
-<body class="min-h-screen text-base-content selection:bg-primary selection:text-primary-content">
+<body class="min-h-screen bg-base-200 text-base-content font-inter selection:bg-primary selection:text-primary-content">
 
   <!-- Navbar -->
   <div class="navbar bg-base-100/50 backdrop-blur border-b border-base-content/10 sticky top-0 z-50 px-6">
