@@ -1,55 +1,52 @@
 <!DOCTYPE html>
-<html lang="cs">
+<html lang="cs" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>reIS Admin - Login</title>
+  <title>reIS Admin</title>
   <link rel="icon" type="image/png" href="favicon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@4.6.0/dist/full.min.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #0f172a; }
+  </style>
 </head>
-<body>
-  <div class="container">
-    <div class="logo">
-      <h1>reIS Admin</h1>
-      <p>Powered by Supabase</p>
-    </div>
+<body class="min-h-screen flex items-center justify-center p-4">
 
-    <div class="card">
-      <div class="card-header">
-        <h2>Přihlášení</h2>
-        <p>Zadejte přístupový kód</p>
+  <div class="card w-full max-w-sm bg-base-200 shadow-xl border border-base-content/10">
+    <div class="card-body">
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold text-primary mb-1">reIS <span class="text-base-content font-normal opacity-70">Admin</span></h1>
+        <p class="text-sm opacity-50">Správa notifikací pro spolky</p>
       </div>
 
-      <div id="error-alert" class="alert alert-error hidden"></div>
+      <div id="error-alert" class="alert alert-error text-sm shadow-lg mb-4 hidden"></div>
 
-      <form id="login-form">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input type="email" id="email" name="email" placeholder="admin@supef.cz" required autocomplete="email">
+      <form id="login-form" class="space-y-4">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Email</span></label>
+          <input type="email" id="email" name="email" placeholder="admin@spolek.cz" class="input input-bordered w-full" required autocomplete="email">
         </div>
 
-        <div class="form-group">
-          <label for="password">Heslo</label>
-          <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password">
+        <div class="form-control">
+          <label class="label"><span class="label-text">Heslo</span></label>
+          <input type="password" id="password" name="password" placeholder="••••••••" class="input input-bordered w-full" required autocomplete="current-password">
         </div>
 
-        <button type="submit" class="btn btn-primary" id="submit-btn">
-          Vstoupit
-        </button>
+        <div class="form-control mt-6">
+          <button type="submit" class="btn btn-primary w-full" id="submit-btn">
+            Vstoupit
+          </button>
+        </div>
       </form>
     </div>
   </div>
-
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL = 'https://zvbpgkmnrqyprtkyxkwn.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2YnBna21ucnF5cHJ0a3l4a3duIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg3NDU5NjYsImV4cCI6MjA4NDMyMTk2Nn0.8eaGOhlZHUf9uOlb6vL_P5D61bILFdgSu245kaIhMvQ';
     
-    // Create Supabase client only if not already exists
     if (typeof window.supabaseClient === 'undefined') {
       window.supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
@@ -71,7 +68,7 @@
       const password = document.getElementById('password').value;
 
       submitBtn.disabled = true;
-      submitBtn.textContent = 'Ověřování...';
+      submitBtn.innerHTML = '<span class="loading loading-spinner loading-xs"></span>';
       errorAlert.classList.add('hidden');
 
       try {
@@ -81,8 +78,6 @@
         });
 
         if (error) throw error;
-
-        // Success - redirect to dashboard
         window.location.href = 'dashboard.html';
 
       } catch (error) {
