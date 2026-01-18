@@ -2,10 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-@plugin "daisyui/theme" {
-  name: "mendelu";
-  default: false;
-  prefers-dark: false;
+/* Mendelu Light Theme */
+[data-theme="mendelu"] {
   color-scheme: light;
   --color-primary: #79be15;
   --color-primary-content: #ffffff;
@@ -29,10 +27,8 @@
   --color-error-content: #ffffff;
 }
 
-@plugin "daisyui/theme" {
-  name: "mendelu-dark";
-  default: true;
-  prefers-dark: true;
+/* Mendelu Dark Theme */
+[data-theme="mendelu-dark"] {
   color-scheme: dark;
   --color-primary: #79be15;
   --color-primary-content: #ffffff;
