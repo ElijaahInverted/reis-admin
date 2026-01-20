@@ -90,7 +90,7 @@ export default function NotificationForm({ associationId, associationName, onSuc
               <div className="form-control">
                 <label className="label pt-0 pb-1">
                   <span className="label-text font-semibold">Zpráva notifikace *</span>
-                  <span className={`label-text-alt text-xs ${title.length > 90 ? 'text-warning' : 'opacity-70'}`}>
+                  <span className={`label-text-alt text-sm ${title.length > 90 ? 'text-warning' : 'opacity-70'}`}>
                     {title.length}/100
                   </span>
                 </label>
@@ -105,7 +105,7 @@ export default function NotificationForm({ associationId, associationName, onSuc
                     autoFocus
                 />
                 <div className="label pt-1 pb-0">
-                  <span className="label-text-alt text-xs text-base-content/60">
+                  <span className="label-text-alt text-sm text-base-content/70">
                     Text se zobrazí v seznamu novinek. Dlouhé texty se zkrátí (...).
                   </span>
                 </div>

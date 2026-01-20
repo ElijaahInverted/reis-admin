@@ -19,7 +19,7 @@ export default function NotificationPreview({ title, associationId, associationN
 
   return (
     <div className="w-full max-w-sm"> {/* Container for context */}
-        <div className="text-xs font-bold text-base-content/50 uppercase tracking-wider mb-2">
+        <div className="text-sm font-bold text-base-content/50 uppercase tracking-wider mb-2">
             Náhled (jak to uvidí student)
         </div>
         
@@ -101,7 +101,7 @@ export default function NotificationPreview({ title, associationId, associationN
              </div>
         </div>
         
-        <div className="mt-2 text-xs text-base-content/40 px-1">
+        <div className="mt-2 text-sm text-base-content/50 px-1">
             * Maximální délka textu je omezena šířkou okna. Dlouhý text bude zkrácen (...).
         </div>
     </div>
