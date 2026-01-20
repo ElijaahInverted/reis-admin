@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           association_id: string
           body: string | null
+          click_count: number
           created_at: string | null
           created_by: string
           expires_at: string
@@ -25,10 +26,12 @@ export type Database = {
           link: string | null
           priority: string | null
           title: string
+          view_count: number
         }
         Insert: {
           association_id: string
           body?: string | null
+          click_count?: number
           created_at?: string | null
           created_by: string
           expires_at: string
@@ -36,10 +39,12 @@ export type Database = {
           link?: string | null
           priority?: string | null
           title: string
+          view_count?: number
         }
         Update: {
           association_id?: string
           body?: string | null
+          click_count?: number
           created_at?: string | null
           created_by?: string
           expires_at?: string
@@ -47,6 +52,7 @@ export type Database = {
           link?: string | null
           priority?: string | null
           title?: string
+          view_count?: number
         }
         Relationships: []
       }

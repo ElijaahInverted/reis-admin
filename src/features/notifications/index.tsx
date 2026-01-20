@@ -4,13 +4,14 @@ import { toast } from 'sonner';
 import { Bell } from 'lucide-react';
 import NotificationForm from './NotificationForm';
 import NotificationList from './NotificationList';
+import { Tables } from '@/lib/database.types';
 
 interface NotificationsViewProps {
   associationId: string | null;
 }
 
 export default function NotificationsView({ associationId }: NotificationsViewProps) {
-  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifications, setNotifications] = useState<Tables<'notifications'>[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchNotifications = useCallback(async () => {

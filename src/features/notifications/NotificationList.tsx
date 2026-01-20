@@ -1,9 +1,10 @@
 import { Trash2, Eye, MousePointer2, Calendar, Link as LinkIcon, BellOff } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
+import { Tables } from '@/lib/database.types';
 
 interface NotificationListProps {
-  notifications: any[];
+  notifications: Tables<'notifications'>[];
   onDelete: () => void;
 }
 
@@ -53,7 +54,7 @@ export default function NotificationList({ notifications, onDelete }: Notificati
                 <div className="flex items-center gap-4 text-sm opacity-60 group-hover:opacity-80 transition-opacity">
                   <span className="flex items-center gap-1"><Eye className="w-4 h-4" /> {n.view_count || 0}</span>
                   <span className="flex items-center gap-1"><MousePointer2 className="w-4 h-4" /> {n.click_count || 0}</span>
-                  <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(n.created_at).toLocaleDateString('cs-CZ')}</span>
+                  <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {n.created_at ? new Date(n.created_at).toLocaleDateString('cs-CZ') : '-'}</span>
                   {n.link && (
                     <a href={n.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary transition-colors">
                       <LinkIcon className="w-4 h-4" /> Odkaz
