@@ -35,18 +35,8 @@ export default function AppLayout({ children, associationName, associationId, cu
       {/* Main Content Area */}
       <main className="flex-1 md:ml-20 flex flex-col min-h-screen transition-all duration-300">
         
-        {/* Top Header - Consolidated */}
-        <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 bg-base-200/90 backdrop-blur-md border-b border-base-300">
-            <div>
-                <h1 className="text-lg font-semibold tracking-tight text-base-content">
-                    {inferredView === 'notifications' && 'Notifikace'}
-                    {inferredView === 'tutorials' && 'Tutoriály'}
-                </h1>
-                <p className="text-sm text-base-content/70 font-medium">
-                    {associationName || 'Načítání...'}
-                </p>
-            </div>
-            
+        {/* Top Header - Slim Toolbar */}
+        <header className="sticky top-0 z-30 flex items-center justify-end px-4 py-2 bg-base-100/90 backdrop-blur-md border-b border-base-300">
             <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <SettingsModal />
@@ -64,6 +54,17 @@ export default function AppLayout({ children, associationName, associationId, cu
         <div className="flex-1 pt-3 px-4 pb-4 overflow-hidden flex flex-col">
             <div className="flex-1 bg-base-100 rounded-lg shadow-sm border border-base-300 overflow-y-auto">
                 <div className="px-6 py-8 w-full max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {/* Page Header (Inside Card) */}
+                    <div className="mb-8">
+                        <h1 className="text-3xl font-bold tracking-tight text-base-content">
+                            {inferredView === 'notifications' && 'Notifikace'}
+                            {inferredView === 'tutorials' && 'Tutoriály'}
+                        </h1>
+                        <p className="text-base text-base-content/60 font-medium mt-1">
+                            {associationName || 'Načítání...'}
+                        </p>
+                    </div>
+                    
                     {children}
                 </div>
             </div>
