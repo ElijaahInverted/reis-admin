@@ -63,7 +63,7 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
             <div className="flex flex-col items-center gap-1 group relative">
                 <div className="tooltip tooltip-right" data-tip={associationName}>
                     <div className="avatar transition-all cursor-help hover:scale-105">
-                        <div className="w-10 h-10 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2 overflow-hidden shadow-sm bg-base-100 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full overflow-hidden shadow-sm bg-base-100 flex items-center justify-center border border-base-300">
                             {associationId ? (
                                 <img 
                                     src={`/spolky/${associationId}.jpg`} 
