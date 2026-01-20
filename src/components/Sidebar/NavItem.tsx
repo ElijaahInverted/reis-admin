@@ -25,7 +25,7 @@ export const NavItem = ({
   const Icon = item.icon;
 
   return (
-    <div className="relative flex items-center justify-center w-full">
+    <div className="relative group">
       <button
         onClick={onClick}
         onMouseEnter={onMouseEnter}
