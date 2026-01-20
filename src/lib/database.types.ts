@@ -198,7 +198,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_notification_click: {
+        Args: { row_id: string }
+        Returns: undefined
+      }
+      increment_notification_view: {
+        Args: { row_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
