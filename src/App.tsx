@@ -5,7 +5,7 @@ import { supabase } from './lib/supabase';
 import LoginScreen from '@/features/auth/LoginScreen';
 import AppLayout from '@/components/AppLayout';
 import NotificationsView from '@/features/notifications';
-import TutorialsView from '@/features/tutorials';
+// import TutorialsView from '@/features/tutorials';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -66,7 +66,7 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Navigate to="/notifications" replace />} />
                     <Route path="/notifications" element={<NotificationsView associationId={association?.association_id || null} />} />
-                    <Route path="/tutorials" element={<TutorialsView associationId={association?.association_id || null} />} />
+                    {/* <Route path="/tutorials" element={<TutorialsView associationId={association?.association_id || null} />} /> */}
                     <Route path="*" element={<Navigate to="/notifications" replace />} />
                 </Routes>
             </AppLayout>
