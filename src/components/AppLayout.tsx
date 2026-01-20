@@ -36,9 +36,9 @@ export default function AppLayout({ children, associationName, associationId, cu
       <main className="flex-1 md:ml-20 flex flex-col min-h-screen transition-all duration-300">
         
         {/* Top Header - Consolidated */}
-        <header className="sticky top-0 z-30 flex items-center justify-between px-6 py-3 bg-base-100/80 backdrop-blur-md border-b border-base-content/10">
+        <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 bg-base-200/90 backdrop-blur-md border-b border-base-300">
             <div>
-                <h1 className="text-xl font-bold tracking-tight text-base-content">
+                <h1 className="text-lg font-semibold tracking-tight text-base-content">
                     {inferredView === 'notifications' && 'Notifikace'}
                     {inferredView === 'tutorials' && 'Tutoriály'}
                 </h1>

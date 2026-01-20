@@ -38,7 +38,7 @@ export const NavItem = ({
         aria-label={item.label}
       >
         <Icon className="w-5 h-5" />
-        <span className="text-[10px] mt-1 font-bold w-full text-center px-1 leading-tight">
+        <span className="text-[10px] mt-1 font-medium w-full text-center px-1 leading-tight">
           {item.label}
         </span>
       </button>

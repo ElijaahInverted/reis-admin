@@ -57,7 +57,7 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
         <div className="flex flex-col gap-2 mb-2 w-full px-2 items-center">
             
             {/* Divider */}
-            <div className="h-px bg-base-300 w-full" />
+            <div className="h-px bg-base-300 w-full my-1" />
 
             {/* Association "Profile" */}
             <div className="flex flex-col items-center gap-1 group relative">
