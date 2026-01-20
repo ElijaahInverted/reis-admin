@@ -61,8 +61,12 @@ export default function AppLayout({ children, associationName, associationId, cu
             </div>
         </header>
 
-        <div className="px-6 py-8 w-full max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {children}
+        <div className="flex-1 pt-3 px-4 pb-4 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-base-100 rounded-lg shadow-sm border border-base-300 overflow-y-auto">
+                <div className="px-6 py-8 w-full max-w-7xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    {children}
+                </div>
+            </div>
         </div>
       </main>
     </div>
