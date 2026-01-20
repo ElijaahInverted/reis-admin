@@ -24,7 +24,7 @@ export default function AppLayout({ children, associationName, associationId, cu
   const inferredView = currentView || location.pathname.replace('/', '') || 'notifications';
 
   return (
-    <div className="flex min-h-screen bg-base-200 text-base-content font-inter">
+    <div className="flex min-h-screen bg-base-200 text-base-content font-sans">
       <Sidebar 
         currentView={inferredView} 
         onViewChange={handleViewChange}
