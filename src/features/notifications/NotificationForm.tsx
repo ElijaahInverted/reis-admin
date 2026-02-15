@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Plus, X, Send, Link as LinkIcon } from 'lucide-react';
@@ -15,6 +15,19 @@ export default function NotificationForm({ associationId, associationName, onSuc
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [weeklyCount, setWeeklyCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!isExpanded || !associationId) return;
+    setWeeklyCount(null);
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    supabase
+      .from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('association_id', associationId)
+      .gte('created_at', since)
+      .then(({ count }) => setWeeklyCount(count ?? 0));
+  }, [isExpanded, associationId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,13 +69,43 @@ export default function NotificationForm({ associationId, associationName, onSuc
 
   if (!isExpanded) {
     return (
-      <button 
+      <button
         onClick={() => setIsExpanded(true)}
         className="btn btn-primary w-full gap-2 shadow-sm animate-fade-in"
       >
         <Plus size={20} />
         Vytvořit novou notifikaci
       </button>
+    );
+  }
+
+  if (weeklyCount === null) {
+    return (
+      <div className="card bg-base-100 shadow-md border border-base-content/10 animate-fade-in-up">
+        <div className="card-body p-6 flex flex-row items-center gap-3">
+          <span className="loading loading-spinner loading-sm"></span>
+          <span className="text-base-content/70 text-sm">Načítání…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (weeklyCount >= 3) {
+    return (
+      <div className="card bg-base-100 shadow-md border border-base-content/10 animate-fade-in-up">
+        <div className="card-body p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div role="alert" className="alert alert-warning flex-1">
+              <span>
+                Tento týden byl dosažen limit 3 notifikací. Novou notifikaci lze vytvořit po uplynutí 7 dní od nejstarší z nich.
+              </span>
+            </div>
+            <button onClick={handleCancel} className="btn btn-ghost btn-sm btn-square shrink-0">
+              <X size={20} />
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
