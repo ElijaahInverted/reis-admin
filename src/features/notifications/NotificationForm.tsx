@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Plus, X, Send, Link as LinkIcon, Calendar } from 'lucide-react';
+import { Plus, X, Send, Link as LinkIcon } from 'lucide-react';
 import NotificationPreview from './NotificationPreview';
 
 interface NotificationFormProps {
@@ -14,10 +14,6 @@ export default function NotificationForm({ associationId, associationName, onSuc
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
-  const [expiresAt, setExpiresAt] = useState(() => {
-    const d = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-    return d.toISOString().split('T')[0];
-  });
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,7 +29,7 @@ export default function NotificationForm({ associationId, associationName, onSuc
         title: title,
         body: title,
         link: link || null,
-        expires_at: new Date(expiresAt).toISOString(),
+        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
         created_by: session?.user?.email || 'unknown',
       }]);
 
@@ -111,39 +107,21 @@ export default function NotificationForm({ associationId, associationName, onSuc
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Link Input */}
-                <div className="form-control">
-                  <label className="label pt-0 pb-1">
-                    <span className="label-text font-semibold flex items-center gap-1">
-                      <LinkIcon size={14} /> Odkaz
-                    </span>
-                  </label>
-                  <input 
-                    type="url" 
-                    value={link}
-                    onChange={e => setLink(e.target.value)}
-                    placeholder="https://..." 
-                    className="input input-bordered w-full input-sm h-10" 
-                    maxLength={200}
-                  />
-                </div>
-
-                {/* Expiration Input */}
-                <div className="form-control">
-                  <label className="label pt-0 pb-1">
-                    <span className="label-text font-semibold flex items-center gap-1">
-                      <Calendar size={14} /> Expirace
-                    </span>
-                  </label>
-                  <input 
-                    type="date" 
-                    value={expiresAt}
-                    onChange={e => setExpiresAt(e.target.value)}
-                    className="input input-bordered w-full input-sm h-10" 
-                    required 
-                  />
-                </div>
+              {/* Link Input */}
+              <div className="form-control">
+                <label className="label pt-0 pb-1">
+                  <span className="label-text font-semibold flex items-center gap-1">
+                    <LinkIcon size={14} /> Odkaz
+                  </span>
+                </label>
+                <input
+                  type="url"
+                  value={link}
+                  onChange={e => setLink(e.target.value)}
+                  placeholder="https://..."
+                  className="input input-bordered w-full input-sm h-10"
+                  maxLength={200}
+                />
               </div>
             </div>
 
