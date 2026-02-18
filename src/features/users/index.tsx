@@ -1,8 +1,15 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Users } from 'lucide-react';
+import { Users, Plus, Pencil } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
+
+const tempSupabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY,
+  { auth: { persistSession: false, autoRefreshToken: false } }
+);
 
 interface UsersViewProps {
   associationId: string | null;
@@ -12,6 +19,46 @@ interface UsersViewProps {
 export default function UsersView({ associationId: _associationId, isReisAdmin }: UsersViewProps) {
   const [accounts, setAccounts] = useState<Tables<'spolky_accounts'>[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editAccount, setEditAccount] = useState<Tables<'spolky_accounts'> | null>(null);
+  const createModalRef = useRef<HTMLDialogElement>(null);
+  const editModalRef = useRef<HTMLDialogElement>(null);
+
+  // Create form state
+  const [createForm, setCreateForm] = useState({
+    association_name: '',
+    association_id: '',
+    email: '',
+    password: '',
+    role: 'association',
+    is_active: true,
+  });
+
+  // Edit form state
+  const [editForm, setEditForm] = useState({
+    association_name: '',
+    association_id: '',
+    email: '',
+  });
+
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    showCreate ? createModalRef.current?.showModal() : createModalRef.current?.close();
+  }, [showCreate]);
+
+  useEffect(() => {
+    if (editAccount) {
+      setEditForm({
+        association_name: editAccount.association_name ?? '',
+        association_id: editAccount.association_id ?? '',
+        email: editAccount.email ?? '',
+      });
+      editModalRef.current?.showModal();
+    } else {
+      editModalRef.current?.close();
+    }
+  }, [editAccount]);
 
   const fetchAccounts = useCallback(async () => {
     setLoading(true);
@@ -86,12 +133,66 @@ export default function UsersView({ associationId: _associationId, isReisAdmin }
     }
   };
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      const { error: authErr } = await tempSupabase.auth.signUp({
+        email: createForm.email,
+        password: createForm.password,
+      });
+      if (authErr) { toast.error(authErr.message); return; }
+
+      const { error: dbErr } = await supabase.from('spolky_accounts').insert({
+        email: createForm.email,
+        association_id: createForm.association_id,
+        association_name: createForm.association_name,
+        role: createForm.role,
+        is_active: createForm.is_active,
+      });
+      if (dbErr) { toast.error(dbErr.message); return; }
+
+      toast.success('Účet vytvořen – potvrzovací e-mail byl odeslán');
+      setShowCreate(false);
+      setCreateForm({ association_name: '', association_id: '', email: '', password: '', role: 'association', is_active: true });
+      fetchAccounts();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editAccount) return;
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('spolky_accounts')
+        .update({
+          association_name: editForm.association_name,
+          association_id: editForm.association_id,
+          email: editForm.email,
+        })
+        .eq('id', editAccount.id);
+      if (error) { toast.error('Chyba při ukládání'); return; }
+      toast.success('Účet upraven');
+      setEditAccount(null);
+      fetchAccounts();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="space-y-4">
-      <h3 className="font-bold text-xl px-1 flex items-center gap-2">
-        <Users className="w-5 h-5 text-primary" />
-        Všechny účty
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-xl px-1 flex items-center gap-2">
+          <Users className="w-5 h-5 text-primary" /> Všechny účty
+        </h3>
+        <button className="btn btn-primary btn-sm gap-2" onClick={() => setShowCreate(true)}>
+          <Plus className="w-4 h-4" /> Přidat účet
+        </button>
+      </div>
 
       {loading ? (
         <div className="space-y-3">
@@ -137,6 +238,15 @@ export default function UsersView({ associationId: _associationId, isReisAdmin }
                   <p className="text-sm text-base-content/60 truncate">{account.email}</p>
                 </div>
 
+                {/* Edit button */}
+                <button
+                  onClick={() => setEditAccount(account)}
+                  className="btn btn-ghost btn-xs"
+                  title="Upravit"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+
                 {/* Role badge */}
                 <button
                   onClick={() => handleCycleRole(account)}
@@ -161,6 +271,182 @@ export default function UsersView({ associationId: _associationId, isReisAdmin }
           ))}
         </div>
       )}
+
+      {/* Create modal */}
+      <dialog ref={createModalRef} className="modal bg-base-300/50 backdrop-blur-sm">
+        <div className="modal-box p-0 overflow-hidden border border-base-content/10">
+          <div className="flex items-center justify-between p-6 border-b border-base-content/10 bg-base-100">
+            <h3 className="font-bold text-lg">Přidat účet</h3>
+            <form method="dialog">
+              <button className="btn btn-sm btn-circle btn-ghost" onClick={() => setShowCreate(false)}>✕</button>
+            </form>
+          </div>
+          <div className="p-6">
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">Název spolku</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  value={createForm.association_name}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, association_name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">ID spolku</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  placeholder="např. mendelu (použito pro /spolky/mendelu.jpg)"
+                  value={createForm.association_id}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, association_id: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">E-mail</span>
+                </label>
+                <input
+                  type="email"
+                  className="input input-bordered w-full"
+                  value={createForm.email}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">Heslo</span>
+                </label>
+                <input
+                  type="password"
+                  className="input input-bordered w-full"
+                  placeholder="••••••••"
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, password: e.target.value }))}
+                  required
+                  minLength={8}
+                />
+              </div>
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">Role</span>
+                </label>
+                <select
+                  className="select select-bordered w-full"
+                  value={createForm.role}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value }))}
+                >
+                  <option value="association">association</option>
+                  <option value="reis_admin">reis_admin</option>
+                </select>
+              </div>
+              <div className="form-control">
+                <label className="label cursor-pointer justify-start gap-3">
+                  <input
+                    type="checkbox"
+                    className="checkbox checkbox-primary"
+                    checked={createForm.is_active}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, is_active: e.target.checked }))}
+                  />
+                  <span className="label-text">Aktivní účet</span>
+                </label>
+              </div>
+              <p className="text-xs text-base-content/50">
+                Na zadaný e-mail bude odeslán potvrzovací e-mail Supabase.
+              </p>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setShowCreate(false)}
+                >
+                  Zrušit
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? <span className="loading loading-spinner loading-sm"></span> : 'Vytvořit'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={() => setShowCreate(false)}>close</button>
+        </form>
+      </dialog>
+
+      {/* Edit modal */}
+      <dialog ref={editModalRef} className="modal bg-base-300/50 backdrop-blur-sm">
+        <div className="modal-box p-0 overflow-hidden border border-base-content/10">
+          <div className="flex items-center justify-between p-6 border-b border-base-content/10 bg-base-100">
+            <h3 className="font-bold text-lg">Upravit účet</h3>
+            <form method="dialog">
+              <button className="btn btn-sm btn-circle btn-ghost" onClick={() => setEditAccount(null)}>✕</button>
+            </form>
+          </div>
+          <div className="p-6">
+            <form onSubmit={handleEdit} className="space-y-4">
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">Název spolku</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  value={editForm.association_name}
+                  onChange={(e) => setEditForm((f) => ({ ...f, association_name: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">ID spolku</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered w-full"
+                  value={editForm.association_id}
+                  onChange={(e) => setEditForm((f) => ({ ...f, association_id: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="form-control">
+                <label className="label pt-0">
+                  <span className="label-text font-semibold">E-mail</span>
+                </label>
+                <input
+                  type="email"
+                  className="input input-bordered w-full"
+                  value={editForm.email}
+                  onChange={(e) => setEditForm((f) => ({ ...f, email: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => setEditAccount(null)}
+                >
+                  Zrušit
+                </button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? <span className="loading loading-spinner loading-sm"></span> : 'Uložit'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button onClick={() => setEditAccount(null)}>close</button>
+        </form>
+      </dialog>
     </div>
   );
 }
