@@ -8,9 +8,10 @@ interface NotificationFormProps {
   associationId: string | null;
   associationName?: string;
   onSuccess: () => void;
+  isReisAdmin?: boolean;
 }
 
-export default function NotificationForm({ associationId, associationName, onSuccess }: NotificationFormProps) {
+export default function NotificationForm({ associationId, associationName, onSuccess, isReisAdmin: _isReisAdmin }: NotificationFormProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');

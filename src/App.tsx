@@ -31,7 +31,7 @@ function App() {
     if (session?.user?.email) {
       supabase
         .from('spolky_accounts')
-        .select('association_id, association_name')
+        .select('association_id, association_name, role')
         .eq('email', session.user.email)
         .single()
         .then(({ data }) => {
@@ -50,22 +50,25 @@ function App() {
     );
   }
 
+  const isReisAdmin = association?.role === 'reis_admin';
+
   return (
     <Router>
         <Toaster position="top-right" />
-        
+
         {!session ? (
             <Routes>
                 <Route path="*" element={<LoginScreen />} />
             </Routes>
         ) : (
-            <AppLayout 
+            <AppLayout
                 associationName={association?.association_name}
                 associationId={association?.association_id}
+                isReisAdmin={isReisAdmin}
             >
                 <Routes>
                     <Route path="/" element={<Navigate to="/notifications" replace />} />
-                    <Route path="/notifications" element={<NotificationsView associationId={association?.association_id || null} />} />
+                    <Route path="/notifications" element={<NotificationsView associationId={association?.association_id || null} isReisAdmin={isReisAdmin} />} />
                     {/* <Route path="/tutorials" element={<TutorialsView associationId={association?.association_id || null} />} /> */}
                     <Route path="*" element={<Navigate to="/notifications" replace />} />
                 </Routes>

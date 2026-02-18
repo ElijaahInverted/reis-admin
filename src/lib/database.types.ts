@@ -64,6 +64,7 @@ export type Database = {
           email: string
           id: string
           is_active: boolean | null
+          role: string
         }
         Insert: {
           association_id: string
@@ -72,6 +73,7 @@ export type Database = {
           email: string
           id?: string
           is_active?: boolean | null
+          role?: string
         }
         Update: {
           association_id?: string
@@ -80,6 +82,7 @@ export type Database = {
           email?: string
           id?: string
           is_active?: boolean | null
+          role?: string
         }
         Relationships: []
       }

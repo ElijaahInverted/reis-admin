@@ -11,9 +11,10 @@ interface AppLayoutProps {
   associationName?: string;
   associationId?: string;
   currentView?: string; // e.g. 'notifications', 'tutorials'
+  isReisAdmin?: boolean;
 }
 
-export default function AppLayout({ children, associationName, associationId, currentView }: AppLayoutProps) {
+export default function AppLayout({ children, associationName, associationId, currentView, isReisAdmin: _isReisAdmin }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
 

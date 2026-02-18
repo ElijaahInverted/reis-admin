@@ -6,9 +6,10 @@ import { Tables } from '@/lib/database.types';
 interface NotificationListProps {
   notifications: Tables<'notifications'>[];
   onDelete: () => void;
+  isReisAdmin?: boolean;
 }
 
-export default function NotificationList({ notifications, onDelete }: NotificationListProps) {
+export default function NotificationList({ notifications, onDelete, isReisAdmin: _isReisAdmin }: NotificationListProps) {
   const handleDelete = async (id: string) => {
     if (!confirm('Opravdu smazat tuto notifikaci?')) return;
 
