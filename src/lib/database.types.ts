@@ -118,51 +118,6 @@ export type Database = {
           },
         ]
       }
-      tutorial_slides_backup_2026_01_19: {
-        Row: {
-          id: string | null
-          layout: string | null
-          left_content: string | null
-          left_icon: string | null
-          left_image_url: string | null
-          left_title: string | null
-          order: number | null
-          right_content: string | null
-          right_icon: string | null
-          right_image_url: string | null
-          right_title: string | null
-          tutorial_id: string | null
-        }
-        Insert: {
-          id?: string | null
-          layout?: string | null
-          left_content?: string | null
-          left_icon?: string | null
-          left_image_url?: string | null
-          left_title?: string | null
-          order?: number | null
-          right_content?: string | null
-          right_icon?: string | null
-          right_image_url?: string | null
-          right_title?: string | null
-          tutorial_id?: string | null
-        }
-        Update: {
-          id?: string | null
-          layout?: string | null
-          left_content?: string | null
-          left_icon?: string | null
-          left_image_url?: string | null
-          left_title?: string | null
-          order?: number | null
-          right_content?: string | null
-          right_icon?: string | null
-          right_image_url?: string | null
-          right_title?: string | null
-          tutorial_id?: string | null
-        }
-        Relationships: []
-      }
       tutorials: {
         Row: {
           association_id: string
@@ -201,6 +156,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_my_role: { Args: never; Returns: string }
       increment_notification_click: {
         Args: { row_id: string }
         Returns: undefined
