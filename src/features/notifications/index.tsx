@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Bell } from 'lucide-react';
 import NotificationForm from './NotificationForm';
 import NotificationList from './NotificationList';
+import GlobalActivityWidget from './GlobalActivityWidget';
 import { Tables } from '@/lib/database.types';
 
 interface NotificationsViewProps {
@@ -45,10 +46,12 @@ export default function NotificationsView({ associationId, isReisAdmin }: Notifi
   }
 
   return (
-    <>
+    <div className="space-y-6">
+      <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
+      
       <NotificationForm associationId={associationId} onSuccess={fetchNotifications} isReisAdmin={isReisAdmin} />
 
-      <div className="space-y-4 pt-8">
+      <div className="space-y-4 pt-4">
         <h3 className="font-bold text-xl px-1 flex items-center gap-2">
           <Bell className="w-5 h-5 text-primary" />
           Aktivní notifikace
@@ -63,6 +66,6 @@ export default function NotificationsView({ associationId, isReisAdmin }: Notifi
             <NotificationList notifications={notifications} onDelete={fetchNotifications} isReisAdmin={isReisAdmin} />
         )}
       </div>
-    </>
+    </div>
   );
 }

@@ -114,24 +114,7 @@ export default function UsersView({ associationId: _associationId, isReisAdmin }
     }
   };
 
-  const handleCycleRole = async (account: Tables<'spolky_accounts'>) => {
-    const newRole = account.role === 'reis_admin' ? 'association' : 'reis_admin';
-    setAccounts((prev) =>
-      prev.map((a) => (a.id === account.id ? { ...a, role: newRole } : a))
-    );
-    const { error } = await supabase
-      .from('spolky_accounts')
-      .update({ role: newRole })
-      .eq('id', account.id);
-    if (error) {
-      toast.error('Chyba při ukládání role');
-      setAccounts((prev) =>
-        prev.map((a) => (a.id === account.id ? { ...a, role: account.role } : a))
-      );
-    } else {
-      toast.success(`Role změněna na ${newRole}`);
-    }
-  };
+
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -248,15 +231,13 @@ export default function UsersView({ associationId: _associationId, isReisAdmin }
                 </button>
 
                 {/* Role badge */}
-                <button
-                  onClick={() => handleCycleRole(account)}
-                  className={`badge cursor-pointer select-none ${
+                <span
+                  className={`badge ${
                     account.role === 'reis_admin' ? 'badge-primary' : 'badge-ghost'
                   }`}
-                  title="Kliknutím změnit roli"
                 >
                   {account.role}
-                </button>
+                </span>
 
                 {/* is_active toggle */}
                 <input
@@ -334,19 +315,7 @@ export default function UsersView({ associationId: _associationId, isReisAdmin }
                   minLength={8}
                 />
               </div>
-              <div className="form-control">
-                <label className="label pt-0">
-                  <span className="label-text font-semibold">Role</span>
-                </label>
-                <select
-                  className="select select-bordered w-full"
-                  value={createForm.role}
-                  onChange={(e) => setCreateForm((f) => ({ ...f, role: e.target.value }))}
-                >
-                  <option value="association">association</option>
-                  <option value="reis_admin">reis_admin</option>
-                </select>
-              </div>
+
               <div className="form-control">
                 <label className="label cursor-pointer justify-start gap-3">
                   <input
