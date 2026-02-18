@@ -6,9 +6,10 @@ import { Tables } from '@/lib/database.types';
 interface GhostingSelectorProps {
   currentGhosting: { id: string, name: string } | null;
   onSelect: (assoc: { id: string, name: string } | null) => void;
+  excludeId?: string | null;
 }
 
-export default function GhostingSelector({ currentGhosting, onSelect }: GhostingSelectorProps) {
+export default function GhostingSelector({ currentGhosting, onSelect, excludeId }: GhostingSelectorProps) {
   const [associations, setAssociations] = useState<Tables<'spolky_accounts'>[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
@@ -28,7 +29,7 @@ export default function GhostingSelector({ currentGhosting, onSelect }: Ghosting
         .eq('is_active', true)
         .order('association_name');
       if (error) throw error;
-      setAssociations(data || []);
+      setAssociations((data || []).filter(a => a.association_id !== excludeId));
     } catch (error) {
       console.error('Error fetching associations:', error);
     } finally {

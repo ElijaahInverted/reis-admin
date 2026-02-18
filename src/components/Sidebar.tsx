@@ -16,6 +16,7 @@ interface SidebarProps {
   isReisAdmin?: boolean;
   ghostingAssociation?: { id: string; name: string } | null;
   onGhostSelect?: (assoc: { id: string; name: string } | null) => void;
+  ownAssociationId?: string | null;
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -23,7 +24,7 @@ const MENU_ITEMS: MenuItem[] = [
   // { id: 'tutorials', label: 'Tutoriály', icon: GraduationCap },
 ];
 
-export const Sidebar = ({ currentView, onViewChange, associationName, associationId, isReisAdmin, ghostingAssociation, onGhostSelect }: SidebarProps) => {
+export const Sidebar = ({ currentView, onViewChange, associationName, associationId, isReisAdmin, ghostingAssociation, onGhostSelect, ownAssociationId }: SidebarProps) => {
   // Logo constants
   const MENDELU_LOGO_PATH = '/mendelu_logo_128.png';
 
@@ -66,6 +67,7 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
             <GhostingSelector
               currentGhosting={ghostingAssociation ?? null}
               onSelect={onGhostSelect}
+              excludeId={ownAssociationId}
             />
           )}
         </div>

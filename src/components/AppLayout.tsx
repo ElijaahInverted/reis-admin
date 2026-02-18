@@ -14,16 +14,18 @@ interface AppLayoutProps {
   isReisAdmin?: boolean;
   ghostingAssociation?: { id: string, name: string } | null;
   onGhostSelect?: (assoc: { id: string, name: string } | null) => void;
+  ownAssociationId?: string | null;
 }
 
-export default function AppLayout({ 
-  children, 
-  associationName, 
-  associationId, 
-  currentView, 
+export default function AppLayout({
+  children,
+  associationName,
+  associationId,
+  currentView,
   isReisAdmin,
   ghostingAssociation,
-  onGhostSelect
+  onGhostSelect,
+  ownAssociationId
 }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -44,6 +46,7 @@ export default function AppLayout({
         isReisAdmin={isReisAdmin}
         ghostingAssociation={ghostingAssociation}
         onGhostSelect={onGhostSelect}
+        ownAssociationId={ownAssociationId}
       />
 
       {/* Main Content Area */}

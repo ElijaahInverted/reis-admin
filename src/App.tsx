@@ -83,6 +83,7 @@ function App() {
                 isReisAdmin={isReisAdmin}
                 ghostingAssociation={ghostingAssociation}
                 onGhostSelect={handleGhostAssociation}
+                ownAssociationId={association?.association_id}
             >
                 <Routes>
                     <Route path="/" element={<Navigate to="/notifications" replace />} />
