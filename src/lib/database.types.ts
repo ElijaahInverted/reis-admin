@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      killer_courses: {
+        Row: {
+          id: string
+          course_code: string
+          course_name: string
+          faculty: string | null
+          is_active: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          course_code: string
+          course_name: string
+          faculty?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          course_code?: string
+          course_name?: string
+          faculty?: string | null
+          is_active?: boolean
+          created_at?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           association_id: string
@@ -55,6 +82,53 @@ export type Database = {
           view_count?: number
         }
         Relationships: []
+      }
+      study_jam_sessions: {
+        Row: {
+          id: string
+          killer_course_id: string
+          location: string
+          scheduled_at: string
+          max_participants: number
+          current_count: number
+          status: string
+          notes: string | null
+          created_by: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          killer_course_id: string
+          location: string
+          scheduled_at: string
+          max_participants?: number
+          current_count?: number
+          status?: string
+          notes?: string | null
+          created_by: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          killer_course_id?: string
+          location?: string
+          scheduled_at?: string
+          max_participants?: number
+          current_count?: number
+          status?: string
+          notes?: string | null
+          created_by?: string
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_jam_sessions_killer_course_id_fkey"
+            columns: ["killer_course_id"]
+            isOneToOne: false
+            referencedRelation: "killer_courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       spolky_accounts: {
         Row: {

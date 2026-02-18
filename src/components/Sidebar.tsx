@@ -1,6 +1,7 @@
 import {
   Bell,
   Users,
+  BookOpen,
   // GraduationCap,
   LogOut
 } from 'lucide-react';
@@ -61,6 +62,15 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
               onMouseEnter={() => {}}
               onMouseLeave={() => {}}
               onClick={() => onViewChange('accounts')}
+            />
+          )}
+          {isReisAdmin && (
+            <NavItem
+              item={{ id: 'study-jams', label: 'Study Jams', icon: BookOpen }}
+              isActive={currentView === 'study-jams'}
+              onMouseEnter={() => {}}
+              onMouseLeave={() => {}}
+              onClick={() => onViewChange('study-jams')}
             />
           )}
           {isReisAdmin && onGhostSelect && (
@@ -141,6 +151,15 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
             >
                 <Users size={24} />
                 <span className="text-[10px] mt-1">Účty</span>
+            </button>
+        )}
+        {isReisAdmin && (
+            <button
+                onClick={() => onViewChange('study-jams')}
+                className={`p-2 rounded-lg flex flex-col items-center ${currentView === 'study-jams' ? 'text-primary' : 'text-base-content/60'}`}
+            >
+                <BookOpen size={24} />
+                <span className="text-[10px] mt-1">Study Jams</span>
             </button>
         )}
         <button
