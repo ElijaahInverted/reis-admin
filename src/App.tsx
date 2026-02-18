@@ -11,7 +11,15 @@ import UsersView from '@/features/users';
 function App() {
   const [session, setSession] = useState<any>(null);
   const [association, setAssociation] = useState<any>(null);
+  const [ghostingAssociation, setGhostingAssociation] = useState<{ id: string, name: string } | null>(() => {
+    const saved = sessionStorage.getItem('ghosting_association');
+    return saved ? JSON.parse(saved) : null;
+  });
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    sessionStorage.setItem('ghosting_association', JSON.stringify(ghostingAssociation));
+  }, [ghostingAssociation]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -40,8 +48,13 @@ function App() {
         });
     } else {
         setAssociation(null);
+        setGhostingAssociation(null);
     }
   }, [session]);
+
+  const handleGhostAssociation = (assoc: { id: string, name: string } | null) => {
+    setGhostingAssociation(assoc);
+  };
 
   if (loading) {
     return (
@@ -52,6 +65,8 @@ function App() {
   }
 
   const isReisAdmin = association?.role === 'reis_admin';
+  const effectiveAssociationId = ghostingAssociation?.id || association?.association_id || null;
+  const effectiveAssociationName = ghostingAssociation?.name || association?.association_name;
 
   return (
     <Router>
@@ -63,15 +78,17 @@ function App() {
             </Routes>
         ) : (
             <AppLayout
-                associationName={association?.association_name}
-                associationId={association?.association_id}
+                associationName={effectiveAssociationName}
+                associationId={effectiveAssociationId}
                 isReisAdmin={isReisAdmin}
+                ghostingAssociation={ghostingAssociation}
+                onGhostSelect={handleGhostAssociation}
             >
                 <Routes>
                     <Route path="/" element={<Navigate to="/notifications" replace />} />
-                    <Route path="/notifications" element={<NotificationsView associationId={association?.association_id || null} isReisAdmin={isReisAdmin} />} />
-                    {/* <Route path="/tutorials" element={<TutorialsView associationId={association?.association_id || null} />} /> */}
-                    <Route path="/accounts" element={<UsersView associationId={association?.association_id || null} isReisAdmin={isReisAdmin} />} />
+                    <Route path="/notifications" element={<NotificationsView associationId={effectiveAssociationId} isReisAdmin={isReisAdmin} isGhosting={ghostingAssociation !== null} />} />
+                    {/* <Route path="/tutorials" element={<TutorialsView associationId={effectiveAssociationId} />} /> */}
+                    <Route path="/accounts" element={<UsersView associationId={effectiveAssociationId} isReisAdmin={isReisAdmin} />} />
                     <Route path="*" element={<Navigate to="/notifications" replace />} />
                 </Routes>
             </AppLayout>

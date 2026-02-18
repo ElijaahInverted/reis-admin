@@ -10,9 +10,10 @@ import { Tables } from '@/lib/database.types';
 interface NotificationsViewProps {
   associationId: string | null;
   isReisAdmin: boolean;
+  isGhosting: boolean;
 }
 
-export default function NotificationsView({ associationId, isReisAdmin }: NotificationsViewProps) {
+export default function NotificationsView({ associationId, isReisAdmin, isGhosting }: NotificationsViewProps) {
   const [notifications, setNotifications] = useState<Tables<'notifications'>[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +25,7 @@ export default function NotificationsView({ associationId, isReisAdmin }: Notifi
         .from('notifications')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!isReisAdmin) query = query.eq('association_id', associationId!);
+      if (!isReisAdmin || isGhosting) query = query.eq('association_id', associationId!);
       const { data, error } = await query;
 
       if (error) throw error;
@@ -35,7 +36,7 @@ export default function NotificationsView({ associationId, isReisAdmin }: Notifi
     } finally {
       setLoading(false);
     }
-  }, [associationId, isReisAdmin]);
+  }, [associationId, isReisAdmin, isGhosting]);
 
   useEffect(() => {
     fetchNotifications();
