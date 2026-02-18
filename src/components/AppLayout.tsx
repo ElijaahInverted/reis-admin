@@ -14,7 +14,7 @@ interface AppLayoutProps {
   isReisAdmin?: boolean;
 }
 
-export default function AppLayout({ children, associationName, associationId, currentView, isReisAdmin: _isReisAdmin }: AppLayoutProps) {
+export default function AppLayout({ children, associationName, associationId, currentView, isReisAdmin }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,7 +37,12 @@ export default function AppLayout({ children, associationName, associationId, cu
       <main className="flex-1 md:ml-20 flex flex-col min-h-screen transition-all duration-300">
         
         {/* Top Header - Slim Toolbar */}
-        <header className="sticky top-0 z-30 flex items-center justify-end px-4 py-2 bg-base-200/90 backdrop-blur-md border-b border-base-300">
+        <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 bg-base-200/90 backdrop-blur-md border-b border-base-300">
+            <div>
+                {isReisAdmin && (
+                    <span className="badge badge-primary badge-sm font-bold tracking-wide">ADMIN</span>
+                )}
+            </div>
             <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <SettingsModal />

@@ -11,7 +11,7 @@ interface NotificationFormProps {
   isReisAdmin?: boolean;
 }
 
-export default function NotificationForm({ associationId, associationName, onSuccess, isReisAdmin: _isReisAdmin }: NotificationFormProps) {
+export default function NotificationForm({ associationId, associationName, onSuccess, isReisAdmin }: NotificationFormProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
@@ -19,7 +19,8 @@ export default function NotificationForm({ associationId, associationName, onSuc
   const [weeklyCount, setWeeklyCount] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!isExpanded || !associationId) return;
+    if (!isExpanded || isReisAdmin) { setWeeklyCount(0); return; }
+    if (!associationId) return;
     setWeeklyCount(null);
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
     supabase
@@ -28,7 +29,7 @@ export default function NotificationForm({ associationId, associationName, onSuc
       .eq('association_id', associationId)
       .gte('created_at', since)
       .then(({ count }) => setWeeklyCount(count ?? 0));
-  }, [isExpanded, associationId]);
+  }, [isExpanded, associationId, isReisAdmin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

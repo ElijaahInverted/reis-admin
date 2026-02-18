@@ -9,7 +9,7 @@ interface NotificationListProps {
   isReisAdmin?: boolean;
 }
 
-export default function NotificationList({ notifications, onDelete, isReisAdmin: _isReisAdmin }: NotificationListProps) {
+export default function NotificationList({ notifications, onDelete, isReisAdmin }: NotificationListProps) {
   const handleDelete = async (id: string) => {
     if (!confirm('Opravdu smazat tuto notifikaci?')) return;
 
@@ -44,11 +44,16 @@ export default function NotificationList({ notifications, onDelete, isReisAdmin:
             <div className="card-body flex-row justify-between items-center py-5 px-6">
               
               <div className="flex-1 min-w-0 pr-4">
-                <div className="flex items-center gap-3 mb-1">
+                <div className="flex items-center gap-3 mb-1 flex-wrap">
                   <span className="font-semibold text-base truncate">{n.title}</span>
-                  {isExpired 
-                    ? <span className="badge badge-sm badge-ghost font-bold opacity-60">Expirováno</span> 
+                  {isExpired
+                    ? <span className="badge badge-sm badge-ghost font-bold opacity-60">Expirováno</span>
                     : <span className="badge badge-sm badge-success font-bold text-white">Aktivní</span>}
+                  {isReisAdmin && (
+                    <span className="badge badge-sm badge-outline font-mono opacity-60" title={n.association_id}>
+                      {n.association_id.slice(0, 8)}
+                    </span>
+                  )}
                 </div>
 
                 
