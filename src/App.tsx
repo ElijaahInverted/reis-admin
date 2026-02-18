@@ -5,6 +5,7 @@ import { supabase } from './lib/supabase';
 import LoginScreen from '@/features/auth/LoginScreen';
 import AppLayout from '@/components/AppLayout';
 import NotificationsView from '@/features/notifications';
+import UsersView from '@/features/users';
 // import TutorialsView from '@/features/tutorials';
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
                     <Route path="/" element={<Navigate to="/notifications" replace />} />
                     <Route path="/notifications" element={<NotificationsView associationId={association?.association_id || null} isReisAdmin={isReisAdmin} />} />
                     {/* <Route path="/tutorials" element={<TutorialsView associationId={association?.association_id || null} />} /> */}
+                    <Route path="/accounts" element={<UsersView associationId={association?.association_id || null} isReisAdmin={isReisAdmin} />} />
                     <Route path="*" element={<Navigate to="/notifications" replace />} />
                 </Routes>
             </AppLayout>

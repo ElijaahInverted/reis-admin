@@ -26,11 +26,12 @@ export default function AppLayout({ children, associationName, associationId, cu
 
   return (
     <div className="flex min-h-screen bg-base-200 text-base-content font-sans">
-      <Sidebar 
-        currentView={inferredView} 
+      <Sidebar
+        currentView={inferredView}
         onViewChange={handleViewChange}
         associationName={associationName}
         associationId={associationId}
+        isReisAdmin={isReisAdmin}
       />
       
       {/* Main Content Area */}
@@ -65,6 +66,7 @@ export default function AppLayout({ children, associationName, associationId, cu
                         <h1 className="text-3xl font-bold tracking-tight text-base-content">
                             {inferredView === 'notifications' && 'Notifikace'}
                             {inferredView === 'tutorials' && 'Tutoriály'}
+                            {inferredView === 'accounts' && 'Správa účtů'}
                         </h1>
                         <p className="text-base text-base-content/60 font-medium mt-1">
                             {associationName || 'Načítání...'}

@@ -1,6 +1,7 @@
-import { 
-  Bell, 
-  // GraduationCap, 
+import {
+  Bell,
+  Users,
+  // GraduationCap,
   LogOut
 } from 'lucide-react';
 import { NavItem, MenuItem } from './Sidebar/NavItem';
@@ -11,6 +12,7 @@ interface SidebarProps {
   onViewChange: (view: any) => void;
   associationName?: string;
   associationId?: string;
+  isReisAdmin?: boolean;
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -18,7 +20,7 @@ const MENU_ITEMS: MenuItem[] = [
   // { id: 'tutorials', label: 'Tutoriály', icon: GraduationCap },
 ];
 
-export const Sidebar = ({ currentView, onViewChange, associationName, associationId }: SidebarProps) => {
+export const Sidebar = ({ currentView, onViewChange, associationName, associationId, isReisAdmin }: SidebarProps) => {
   // Logo constants
   const MENDELU_LOGO_PATH = '/mendelu_logo_128.png';
 
@@ -48,6 +50,15 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
               onClick={() => onViewChange(item.id)}
             />
           ))}
+          {isReisAdmin && (
+            <NavItem
+              item={{ id: 'accounts', label: 'Správa účtů', icon: Users }}
+              isActive={currentView === 'accounts'}
+              onMouseEnter={() => {}}
+              onMouseLeave={() => {}}
+              onClick={() => onViewChange('accounts')}
+            />
+          )}
         </div>
 
         {/* Spacer */}
@@ -112,6 +123,15 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
                 </button>
             )
         })}
+        {isReisAdmin && (
+            <button
+                onClick={() => onViewChange('accounts')}
+                className={`p-2 rounded-lg flex flex-col items-center ${currentView === 'accounts' ? 'text-primary' : 'text-base-content/60'}`}
+            >
+                <Users size={24} />
+                <span className="text-[10px] mt-1">Účty</span>
+            </button>
+        )}
         <button
             onClick={() => supabase.auth.signOut()}
             className="p-2 rounded-lg flex flex-col items-center text-error/70"
