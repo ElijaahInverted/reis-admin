@@ -4,3 +4,4 @@ dist
 .env
 .vercel
 supabase/.temp
+tsconfig.tsbuildinfo
