@@ -12,9 +12,19 @@ interface AppLayoutProps {
   associationId?: string;
   currentView?: string; // e.g. 'notifications', 'tutorials'
   isReisAdmin?: boolean;
+  ghostingAssociation?: { id: string, name: string } | null;
+  onGhostSelect?: (assoc: { id: string, name: string } | null) => void;
 }
 
-export default function AppLayout({ children, associationName, associationId, currentView, isReisAdmin }: AppLayoutProps) {
+export default function AppLayout({ 
+  children, 
+  associationName, 
+  associationId, 
+  currentView, 
+  isReisAdmin,
+  ghostingAssociation,
+  onGhostSelect
+}: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -32,23 +42,20 @@ export default function AppLayout({ children, associationName, associationId, cu
         associationName={associationName}
         associationId={associationId}
         isReisAdmin={isReisAdmin}
+        ghostingAssociation={ghostingAssociation}
+        onGhostSelect={onGhostSelect}
       />
-      
+
       {/* Main Content Area */}
       <main className="flex-1 md:ml-20 flex flex-col min-h-screen transition-all duration-300">
-        
+
         {/* Top Header - Slim Toolbar */}
-        <header className="sticky top-0 z-30 flex items-center justify-between px-4 py-2 bg-base-200/90 backdrop-blur-md border-b border-base-300">
-            <div>
-                {isReisAdmin && (
-                    <span className="badge badge-primary badge-sm font-bold tracking-wide">ADMIN</span>
-                )}
-            </div>
+        <header className="sticky top-0 z-30 flex items-center justify-end px-4 py-2 bg-base-200/90 backdrop-blur-md border-b border-base-300">
             <div className="flex items-center gap-2">
                 <ThemeToggle />
                 <SettingsModal />
                 <div className="divider divider-horizontal mx-1 py-2"></div>
-                <button 
+                <button
                     onClick={() => supabase.auth.signOut()}
                     className="btn btn-ghost btn-circle text-error hover:bg-error/10"
                     title="Odhlásit se"

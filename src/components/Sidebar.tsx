@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { NavItem, MenuItem } from './Sidebar/NavItem';
 import { supabase } from '@/lib/supabase';
+import GhostingSelector from './GhostingSelector';
 
 interface SidebarProps {
   currentView: string;
@@ -13,6 +14,8 @@ interface SidebarProps {
   associationName?: string;
   associationId?: string;
   isReisAdmin?: boolean;
+  ghostingAssociation?: { id: string; name: string } | null;
+  onGhostSelect?: (assoc: { id: string; name: string } | null) => void;
 }
 
 const MENU_ITEMS: MenuItem[] = [
@@ -20,7 +23,7 @@ const MENU_ITEMS: MenuItem[] = [
   // { id: 'tutorials', label: 'Tutoriály', icon: GraduationCap },
 ];
 
-export const Sidebar = ({ currentView, onViewChange, associationName, associationId, isReisAdmin }: SidebarProps) => {
+export const Sidebar = ({ currentView, onViewChange, associationName, associationId, isReisAdmin, ghostingAssociation, onGhostSelect }: SidebarProps) => {
   // Logo constants
   const MENDELU_LOGO_PATH = '/mendelu_logo_128.png';
 
@@ -57,6 +60,12 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
               onMouseEnter={() => {}}
               onMouseLeave={() => {}}
               onClick={() => onViewChange('accounts')}
+            />
+          )}
+          {isReisAdmin && onGhostSelect && (
+            <GhostingSelector
+              currentGhosting={ghostingAssociation ?? null}
+              onSelect={onGhostSelect}
             />
           )}
         </div>
