@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Calendar, MapPin, Users, Plus, X, Pencil, Ban } from 'lucide-react';
+import { Calendar, MapPin, Users, Plus, X, Pencil, Ban, UserCheck, UserX } from 'lucide-react';
 import { Tables } from '@/lib/database.types';
 
 type KillerCourse = Tables<'killer_courses'>;
@@ -11,13 +11,17 @@ type SessionWithCourse = Tables<'study_jam_sessions'> & {
 };
 
 const STATUS_BADGE: Record<string, string> = {
+  open: 'badge-warning',
   scheduled: 'badge-info',
+  full: 'badge-accent',
   completed: 'badge-success',
   cancelled: 'badge-error',
 };
 
 const STATUS_LABEL: Record<string, string> = {
+  open: 'Čeká na tutora',
   scheduled: 'Naplánováno',
+  full: 'Obsazeno',
   completed: 'Dokončeno',
   cancelled: 'Zrušeno',
 };
@@ -32,12 +36,6 @@ function formatDate(iso: string) {
   });
 }
 
-function toDatetimeLocal(iso: string) {
-  const d = new Date(iso);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-}
-
 export default function SessionList() {
   const [sessions, setSessions] = useState<SessionWithCourse[]>([]);
   const [courses, setCourses] = useState<KillerCourse[]>([]);
@@ -49,19 +47,15 @@ export default function SessionList() {
 
   const emptyForm = {
     killer_course_id: '',
-    location: '',
-    scheduled_at: '',
-    max_participants: 6,
+    max_tutees: 1,
     notes: '',
   };
   const [createForm, setCreateForm] = useState(emptyForm);
   const [editForm, setEditForm] = useState({
     killer_course_id: '',
-    location: '',
-    scheduled_at: '',
-    max_participants: 6,
+    max_tutees: 1,
     notes: '',
-    status: 'scheduled',
+    status: 'open',
   });
 
   const fetchSessions = useCallback(async () => {
@@ -70,7 +64,7 @@ export default function SessionList() {
       const { data, error } = await supabase
         .from('study_jam_sessions')
         .select('*, killer_courses(course_code, course_name)')
-        .order('scheduled_at', { ascending: true });
+        .order('created_at', { ascending: false });
       if (error) throw error;
       setSessions((data as SessionWithCourse[]) || []);
     } catch {
@@ -98,9 +92,7 @@ export default function SessionList() {
     if (editSession) {
       setEditForm({
         killer_course_id: editSession.killer_course_id,
-        location: editSession.location,
-        scheduled_at: toDatetimeLocal(editSession.scheduled_at),
-        max_participants: editSession.max_participants,
+        max_tutees: editSession.max_tutees,
         notes: editSession.notes ?? '',
         status: editSession.status,
       });
@@ -112,15 +104,13 @@ export default function SessionList() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.killer_course_id || !createForm.location || !createForm.scheduled_at) return;
+    if (!createForm.killer_course_id) return;
     setSubmitting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const { error } = await supabase.from('study_jam_sessions').insert({
         killer_course_id: createForm.killer_course_id,
-        location: createForm.location.trim(),
-        scheduled_at: new Date(createForm.scheduled_at).toISOString(),
-        max_participants: createForm.max_participants,
+        max_tutees: createForm.max_tutees,
         notes: createForm.notes.trim() || null,
         created_by: session?.user?.email || 'unknown',
       });
@@ -129,8 +119,8 @@ export default function SessionList() {
       setCreateForm(emptyForm);
       setIsExpanded(false);
       fetchSessions();
-    } catch (error: any) {
-      toast.error(error.message || 'Chyba při ukládání');
+    } catch (error: unknown) {
+      toast.error((error as { message?: string }).message || 'Chyba při ukládání');
     } finally {
       setSubmitting(false);
     }
@@ -145,9 +135,7 @@ export default function SessionList() {
         .from('study_jam_sessions')
         .update({
           killer_course_id: editForm.killer_course_id,
-          location: editForm.location.trim(),
-          scheduled_at: new Date(editForm.scheduled_at).toISOString(),
-          max_participants: editForm.max_participants,
+          max_tutees: editForm.max_tutees,
           notes: editForm.notes.trim() || null,
           status: editForm.status,
         })
@@ -156,15 +144,15 @@ export default function SessionList() {
       toast.success('Session uložena');
       setEditSession(null);
       fetchSessions();
-    } catch (error: any) {
-      toast.error(error.message || 'Chyba při ukládání');
+    } catch (error: unknown) {
+      toast.error((error as { message?: string }).message || 'Chyba při ukládání');
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleCancel = async (session: SessionWithCourse) => {
-    if (!confirm(`Zrušit session "${session.killer_courses?.course_code}" dne ${formatDate(session.scheduled_at)}?`)) return;
+    if (!confirm(`Zrušit session pro předmět "${session.killer_courses?.course_code}"?`)) return;
     const { error } = await supabase
       .from('study_jam_sessions')
       .update({ status: 'cancelled' })
@@ -229,42 +217,20 @@ export default function SessionList() {
                 </div>
                 <div className="form-control">
                   <label className="label pt-0 pb-1">
-                    <span className="label-text font-semibold">Místo konání *</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="input input-bordered w-full"
-                    placeholder="např. Budova A, místnost 123"
-                    value={createForm.location}
-                    onChange={(e) => setCreateForm((f) => ({ ...f, location: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="form-control">
-                  <label className="label pt-0 pb-1">
-                    <span className="label-text font-semibold">Datum a čas *</span>
-                  </label>
-                  <input
-                    type="datetime-local"
-                    className="input input-bordered w-full"
-                    value={createForm.scheduled_at}
-                    onChange={(e) => setCreateForm((f) => ({ ...f, scheduled_at: e.target.value }))}
-                    required
-                  />
-                </div>
-                <div className="form-control">
-                  <label className="label pt-0 pb-1">
-                    <span className="label-text font-semibold">Max. účastníků</span>
+                    <span className="label-text font-semibold">Max. tutees</span>
                   </label>
                   <input
                     type="number"
                     className="input input-bordered w-full"
                     min={1}
-                    max={100}
-                    value={createForm.max_participants}
-                    onChange={(e) => setCreateForm((f) => ({ ...f, max_participants: Number(e.target.value) }))}
+                    max={20}
+                    value={createForm.max_tutees}
+                    onChange={(e) => setCreateForm((f) => ({ ...f, max_tutees: Number(e.target.value) }))}
                     required
                   />
+                  <label className="label pt-1 pb-0">
+                    <span className="label-text-alt text-base-content/50">Kolik tutees se může přihlásit (1 = 1:1)</span>
+                  </label>
                 </div>
                 <div className="form-control">
                   <label className="label pt-0 pb-1">
@@ -332,17 +298,32 @@ export default function SessionList() {
                     </span>
                   </div>
                   <div className="flex flex-wrap gap-3 text-xs text-base-content/60">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {session.location}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      {formatDate(session.scheduled_at)}
-                    </span>
+                    {session.tutor_studium ? (
+                      <span className="flex items-center gap-1 text-success">
+                        <UserCheck className="w-3 h-3" />
+                        Tutor: {session.tutor_studium}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-warning">
+                        <UserX className="w-3 h-3" />
+                        Bez tutora
+                      </span>
+                    )}
+                    {session.scheduled_at && (
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {formatDate(session.scheduled_at)}
+                      </span>
+                    )}
+                    {session.location && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        {session.location}
+                      </span>
+                    )}
                     <span className="flex items-center gap-1">
                       <Users className="w-3 h-3" />
-                      {session.current_count}/{session.max_participants}
+                      {session.tutee_count}/{session.max_tutees} tutees
                     </span>
                   </div>
                   {session.notes && (
@@ -357,7 +338,7 @@ export default function SessionList() {
                   >
                     <Pencil className="w-4 h-4" />
                   </button>
-                  {session.status === 'scheduled' && (
+                  {(session.status === 'open' || session.status === 'scheduled') && (
                     <button
                       onClick={() => handleCancel(session)}
                       className="btn btn-ghost btn-xs text-error/60 hover:text-error hover:bg-error/10"
@@ -409,39 +390,15 @@ export default function SessionList() {
               </div>
               <div className="form-control">
                 <label className="label pt-0 pb-1">
-                  <span className="label-text font-semibold">Místo konání</span>
-                </label>
-                <input
-                  type="text"
-                  className="input input-bordered w-full"
-                  value={editForm.location}
-                  onChange={(e) => setEditForm((f) => ({ ...f, location: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="form-control">
-                <label className="label pt-0 pb-1">
-                  <span className="label-text font-semibold">Datum a čas</span>
-                </label>
-                <input
-                  type="datetime-local"
-                  className="input input-bordered w-full"
-                  value={editForm.scheduled_at}
-                  onChange={(e) => setEditForm((f) => ({ ...f, scheduled_at: e.target.value }))}
-                  required
-                />
-              </div>
-              <div className="form-control">
-                <label className="label pt-0 pb-1">
-                  <span className="label-text font-semibold">Max. účastníků</span>
+                  <span className="label-text font-semibold">Max. tutees</span>
                 </label>
                 <input
                   type="number"
                   className="input input-bordered w-full"
                   min={1}
-                  max={100}
-                  value={editForm.max_participants}
-                  onChange={(e) => setEditForm((f) => ({ ...f, max_participants: Number(e.target.value) }))}
+                  max={20}
+                  value={editForm.max_tutees}
+                  onChange={(e) => setEditForm((f) => ({ ...f, max_tutees: Number(e.target.value) }))}
                   required
                 />
               </div>
@@ -454,7 +411,9 @@ export default function SessionList() {
                   value={editForm.status}
                   onChange={(e) => setEditForm((f) => ({ ...f, status: e.target.value }))}
                 >
+                  <option value="open">Čeká na tutora</option>
                   <option value="scheduled">Naplánováno</option>
+                  <option value="full">Obsazeno</option>
                   <option value="completed">Dokončeno</option>
                   <option value="cancelled">Zrušeno</option>
                 </select>

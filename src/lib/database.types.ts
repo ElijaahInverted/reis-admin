@@ -83,14 +83,44 @@ export type Database = {
         }
         Relationships: []
       }
+      study_jam_availability: {
+        Row: {
+          id: string
+          studium: string
+          course_code: string
+          role: string
+          semester_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          studium: string
+          course_code: string
+          role: string
+          semester_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          studium?: string
+          course_code?: string
+          role?: string
+          semester_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       study_jam_sessions: {
         Row: {
           id: string
           killer_course_id: string
-          location: string
-          scheduled_at: string
+          location: string | null
+          scheduled_at: string | null
           max_participants: number
           current_count: number
+          max_tutees: number
+          tutee_count: number
+          tutor_studium: string | null
           status: string
           notes: string | null
           created_by: string
@@ -99,10 +129,13 @@ export type Database = {
         Insert: {
           id?: string
           killer_course_id: string
-          location: string
-          scheduled_at: string
+          location?: string | null
+          scheduled_at?: string | null
           max_participants?: number
           current_count?: number
+          max_tutees?: number
+          tutee_count?: number
+          tutor_studium?: string | null
           status?: string
           notes?: string | null
           created_by: string
@@ -111,10 +144,13 @@ export type Database = {
         Update: {
           id?: string
           killer_course_id?: string
-          location?: string
-          scheduled_at?: string
+          location?: string | null
+          scheduled_at?: string | null
           max_participants?: number
           current_count?: number
+          max_tutees?: number
+          tutee_count?: number
+          tutor_studium?: string | null
           status?: string
           notes?: string | null
           created_by?: string
