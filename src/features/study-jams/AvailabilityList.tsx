@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Users, RefreshCw, Plus } from 'lucide-react';
+import { Users, RefreshCw, Plus, Shuffle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tables } from '@/lib/database.types';
 
@@ -64,7 +64,9 @@ function aggregate(rows: AvailabilityRow[], matchRows: TutoringMatchRow[]): Cour
 
 export default function AvailabilityList() {
   const [rows, setRows] = useState<CourseAggregate[]>([]);
+  const [rawRows, setRawRows] = useState<AvailabilityRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [matching, setMatching] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee', semester_id: '' });
@@ -78,8 +80,10 @@ export default function AvailabilityList() {
         supabase.from('tutoring_matches').select('course_code, semester_id'),
       ]);
       if (availResult.error) throw availResult.error;
+      const availData = availResult.data || [];
       const matchRows: TutoringMatchRow[] = matchResult.data ?? [];
-      setRows(aggregate(availResult.data || [], matchRows));
+      setRawRows(availData);
+      setRows(aggregate(availData, matchRows));
       setLastRefresh(new Date());
     } catch (e) {
       console.error('[AvailabilityList] fetch error', e);
@@ -107,6 +111,34 @@ export default function AvailabilityList() {
       toast.error(error instanceof Error ? error.message : 'Chyba při ukládání');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleMatch = async (courseCode: string) => {
+    const tutors = rawRows.filter(r => r.course_code === courseCode && r.role === 'tutor');
+    const tutees = rawRows.filter(r => r.course_code === courseCode && r.role === 'tutee');
+    if (tutors.length === 0 || tutees.length === 0) return;
+    const tutor = tutors[Math.floor(Math.random() * tutors.length)];
+    const tutee = tutees[Math.floor(Math.random() * tutees.length)];
+    setMatching(courseCode);
+    try {
+      const { error: matchError } = await supabase.from('tutoring_matches').insert({
+        tutor_studium: tutor.studium,
+        tutee_studium: tutee.studium,
+        course_code: courseCode,
+        semester_id: tutor.semester_id,
+      });
+      if (matchError) throw matchError;
+      await Promise.all([
+        supabase.from('study_jam_availability').delete().eq('id', tutor.id),
+        supabase.from('study_jam_availability').delete().eq('id', tutee.id),
+      ]);
+      toast.success(`Spárováno: tutor ${tutor.studium} ↔ tutee ${tutee.studium} (${courseCode})`);
+      fetchData();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Chyba při párování');
+    } finally {
+      setMatching(null);
     }
   };
 
@@ -237,6 +269,7 @@ export default function AvailabilityList() {
                   <th className="font-semibold text-base-content/70 text-center">Tutees čekají</th>
                   <th className="font-semibold text-base-content/70 text-center">Párováno</th>
                   <th className="font-semibold text-base-content/70">Nejstarší záznam</th>
+                  <th className="font-semibold text-base-content/70 text-center">Akce</th>
                 </tr>
               </thead>
               <tbody>
@@ -267,6 +300,21 @@ export default function AvailabilityList() {
                       )}
                     </td>
                     <td className="text-xs text-base-content/60">{formatDate(row.oldestAt)}</td>
+                    <td className="text-center">
+                      <button
+                        onClick={() => handleMatch(row.course_code)}
+                        disabled={row.tutorCount === 0 || row.tuteeCount === 0 || matching === row.course_code}
+                        className="btn btn-xs btn-primary gap-1"
+                        title="Náhodně spárovat 1 tutora + 1 tutea"
+                      >
+                        {matching === row.course_code ? (
+                          <span className="loading loading-spinner loading-xs"></span>
+                        ) : (
+                          <Shuffle className="w-3 h-3" />
+                        )}
+                        Párovat
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
