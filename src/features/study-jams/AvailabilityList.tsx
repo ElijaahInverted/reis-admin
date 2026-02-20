@@ -5,10 +5,16 @@ import { Tables } from '@/lib/database.types';
 
 type AvailabilityRow = Tables<'study_jam_availability'>;
 
+interface TutoringMatchRow {
+  course_code: string;
+  semester_id: string;
+}
+
 interface CourseAggregate {
   course_code: string;
   tutorCount: number;
   tuteeCount: number;
+  matchedCount: number;
   oldestAt: string;
 }
 
@@ -20,7 +26,7 @@ function formatDate(iso: string) {
   });
 }
 
-function aggregate(rows: AvailabilityRow[]): CourseAggregate[] {
+function aggregate(rows: AvailabilityRow[], matchRows: TutoringMatchRow[]): CourseAggregate[] {
   const map = new Map<string, CourseAggregate>();
   for (const row of rows) {
     const existing = map.get(row.course_code);
@@ -29,12 +35,27 @@ function aggregate(rows: AvailabilityRow[]): CourseAggregate[] {
         course_code: row.course_code,
         tutorCount: row.role === 'tutor' ? 1 : 0,
         tuteeCount: row.role === 'tutee' ? 1 : 0,
+        matchedCount: 0,
         oldestAt: row.created_at,
       });
     } else {
       if (row.role === 'tutor') existing.tutorCount++;
       if (row.role === 'tutee') existing.tuteeCount++;
       if (row.created_at < existing.oldestAt) existing.oldestAt = row.created_at;
+    }
+  }
+  for (const match of matchRows) {
+    const existing = map.get(match.course_code);
+    if (existing) {
+      existing.matchedCount++;
+    } else {
+      map.set(match.course_code, {
+        course_code: match.course_code,
+        tutorCount: 0,
+        tuteeCount: 0,
+        matchedCount: 1,
+        oldestAt: new Date().toISOString(),
+      });
     }
   }
   return Array.from(map.values()).sort((a, b) => a.course_code.localeCompare(b.course_code));
@@ -49,11 +70,14 @@ export default function AvailabilityList() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('study_jam_availability')
-        .select('*');
-      if (error) throw error;
-      setRows(aggregate(data || []));
+      const [availResult, matchResult] = await Promise.all([
+        supabase.from('study_jam_availability').select('*'),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from('tutoring_matches').select('course_code, semester_id'),
+      ]);
+      if (availResult.error) throw availResult.error;
+      const matchRows: TutoringMatchRow[] = matchResult.data ?? [];
+      setRows(aggregate(availResult.data || [], matchRows));
       setLastRefresh(new Date());
     } catch (e) {
       console.error('[AvailabilityList] fetch error', e);
@@ -116,6 +140,7 @@ export default function AvailabilityList() {
                   <th className="font-semibold text-base-content/70">Předmět</th>
                   <th className="font-semibold text-base-content/70 text-center">Tutoři čekají</th>
                   <th className="font-semibold text-base-content/70 text-center">Tutees čekají</th>
+                  <th className="font-semibold text-base-content/70 text-center">Párováno</th>
                   <th className="font-semibold text-base-content/70">Nejstarší záznam</th>
                 </tr>
               </thead>
@@ -135,6 +160,13 @@ export default function AvailabilityList() {
                     <td className="text-center">
                       {row.tuteeCount > 0 ? (
                         <span className="badge badge-warning badge-sm font-semibold">{row.tuteeCount}</span>
+                      ) : (
+                        <span className="text-base-content/30 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="text-center">
+                      {row.matchedCount > 0 ? (
+                        <span className="badge badge-info badge-sm font-semibold">{row.matchedCount}</span>
                       ) : (
                         <span className="text-base-content/30 text-xs">—</span>
                       )}
