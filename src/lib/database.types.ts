@@ -16,28 +16,28 @@ export type Database = {
     Tables: {
       killer_courses: {
         Row: {
-          id: string
           course_code: string
           course_name: string
-          faculty: string | null
-          is_active: boolean
           created_at: string
+          faculty: string | null
+          id: string
+          is_active: boolean
         }
         Insert: {
-          id?: string
           course_code: string
           course_name: string
-          faculty?: string | null
-          is_active?: boolean
           created_at?: string
+          faculty?: string | null
+          id?: string
+          is_active?: boolean
         }
         Update: {
-          id?: string
           course_code?: string
           course_name?: string
-          faculty?: string | null
-          is_active?: boolean
           created_at?: string
+          faculty?: string | null
+          id?: string
+          is_active?: boolean
         }
         Relationships: []
       }
@@ -83,89 +83,6 @@ export type Database = {
         }
         Relationships: []
       }
-      study_jam_availability: {
-        Row: {
-          id: string
-          studium: string
-          course_code: string
-          role: string
-          semester_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          studium: string
-          course_code: string
-          role: string
-          semester_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          studium?: string
-          course_code?: string
-          role?: string
-          semester_id?: string
-          created_at?: string
-        }
-        Relationships: []
-      }
-      study_jam_sessions: {
-        Row: {
-          id: string
-          killer_course_id: string
-          location: string | null
-          scheduled_at: string | null
-          max_participants: number
-          current_count: number
-          max_tutees: number
-          tutee_count: number
-          tutor_studium: string | null
-          status: string
-          notes: string | null
-          created_by: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          killer_course_id: string
-          location?: string | null
-          scheduled_at?: string | null
-          max_participants?: number
-          current_count?: number
-          max_tutees?: number
-          tutee_count?: number
-          tutor_studium?: string | null
-          status?: string
-          notes?: string | null
-          created_by: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          killer_course_id?: string
-          location?: string | null
-          scheduled_at?: string | null
-          max_participants?: number
-          current_count?: number
-          max_tutees?: number
-          tutee_count?: number
-          tutor_studium?: string | null
-          status?: string
-          notes?: string | null
-          created_by?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "study_jam_sessions_killer_course_id_fkey"
-            columns: ["killer_course_id"]
-            isOneToOne: false
-            referencedRelation: "killer_courses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       spolky_accounts: {
         Row: {
           association_id: string
@@ -195,6 +112,89 @@ export type Database = {
           role?: string
         }
         Relationships: []
+      }
+      study_jam_availability: {
+        Row: {
+          course_code: string
+          created_at: string
+          id: string
+          role: string
+          semester_id: string
+          studium: string
+        }
+        Insert: {
+          course_code: string
+          created_at?: string
+          id?: string
+          role: string
+          semester_id: string
+          studium: string
+        }
+        Update: {
+          course_code?: string
+          created_at?: string
+          id?: string
+          role?: string
+          semester_id?: string
+          studium?: string
+        }
+        Relationships: []
+      }
+      study_jam_sessions: {
+        Row: {
+          created_at: string
+          created_by: string
+          current_count: number
+          id: string
+          killer_course_id: string
+          location: string | null
+          max_participants: number
+          max_tutees: number
+          notes: string | null
+          scheduled_at: string | null
+          status: string
+          tutee_count: number
+          tutor_studium: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          current_count?: number
+          id?: string
+          killer_course_id: string
+          location?: string | null
+          max_participants?: number
+          max_tutees?: number
+          notes?: string | null
+          scheduled_at?: string | null
+          status?: string
+          tutee_count?: number
+          tutor_studium?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          current_count?: number
+          id?: string
+          killer_course_id?: string
+          location?: string | null
+          max_participants?: number
+          max_tutees?: number
+          notes?: string | null
+          scheduled_at?: string | null
+          status?: string
+          tutee_count?: number
+          tutor_studium?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "study_jam_sessions_killer_course_id_fkey"
+            columns: ["killer_course_id"]
+            isOneToOne: false
+            referencedRelation: "killer_courses"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tutorial_slides: {
         Row: {
@@ -258,6 +258,33 @@ export type Database = {
           is_published?: boolean
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      tutoring_matches: {
+        Row: {
+          course_code: string
+          id: string
+          matched_at: string
+          semester_id: string
+          tutee_studium: string
+          tutor_studium: string
+        }
+        Insert: {
+          course_code: string
+          id?: string
+          matched_at?: string
+          semester_id: string
+          tutee_studium: string
+          tutor_studium: string
+        }
+        Update: {
+          course_code?: string
+          id?: string
+          matched_at?: string
+          semester_id?: string
+          tutee_studium?: string
+          tutor_studium?: string
         }
         Relationships: []
       }

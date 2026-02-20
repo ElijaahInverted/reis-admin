@@ -72,8 +72,7 @@ export default function AvailabilityList() {
     try {
       const [availResult, matchResult] = await Promise.all([
         supabase.from('study_jam_availability').select('*'),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (supabase as any).from('tutoring_matches').select('course_code, semester_id'),
+        supabase.from('tutoring_matches').select('course_code, semester_id'),
       ]);
       if (availResult.error) throw availResult.error;
       const matchRows: TutoringMatchRow[] = matchResult.data ?? [];
