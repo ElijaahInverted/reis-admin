@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Users, RefreshCw } from 'lucide-react';
+import { Users, RefreshCw, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { Tables } from '@/lib/database.types';
 
 type AvailabilityRow = Tables<'study_jam_availability'>;
@@ -66,6 +67,8 @@ export default function AvailabilityList() {
   const [loading, setLoading] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee', semester_id: '' });
+  const [submitting, setSubmitting] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -84,6 +87,28 @@ export default function AvailabilityList() {
       setLoading(false);
     }
   }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addForm.studium.trim() || !addForm.course_code.trim() || !addForm.semester_id.trim()) return;
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.from('study_jam_availability').insert({
+        studium: addForm.studium.trim(),
+        course_code: addForm.course_code.trim(),
+        role: addForm.role,
+        semester_id: addForm.semester_id.trim(),
+      });
+      if (error) throw error;
+      toast.success(`${addForm.role} ${addForm.studium} přidán pro ${addForm.course_code}`);
+      setAddForm(f => ({ ...f, studium: '' }));
+      fetchData();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Chyba při ukládání');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -115,6 +140,77 @@ export default function AvailabilityList() {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Obnovit
           </button>
+        </div>
+      </div>
+
+      <div className="card bg-base-100 border border-base-300 shadow-sm">
+        <div className="card-body p-4">
+          <form onSubmit={handleAdd} className="flex flex-wrap gap-2 items-end">
+            <div className="form-control min-w-28">
+              <label className="label pt-0 pb-1">
+                <span className="label-text text-xs font-semibold">Studium *</span>
+              </label>
+              <input
+                type="text"
+                className="input input-bordered input-sm"
+                placeholder="např. 12345"
+                value={addForm.studium}
+                onChange={(e) => setAddForm(f => ({ ...f, studium: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="form-control min-w-28">
+              <label className="label pt-0 pb-1">
+                <span className="label-text text-xs font-semibold">Kód předmětu *</span>
+              </label>
+              <input
+                type="text"
+                className="input input-bordered input-sm"
+                placeholder="např. AF1"
+                value={addForm.course_code}
+                onChange={(e) => setAddForm(f => ({ ...f, course_code: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="form-control min-w-24">
+              <label className="label pt-0 pb-1">
+                <span className="label-text text-xs font-semibold">Role *</span>
+              </label>
+              <select
+                className="select select-bordered select-sm"
+                value={addForm.role}
+                onChange={(e) => setAddForm(f => ({ ...f, role: e.target.value as 'tutor' | 'tutee' }))}
+              >
+                <option value="tutor">Tutor</option>
+                <option value="tutee">Tutee</option>
+              </select>
+            </div>
+            <div className="form-control min-w-24">
+              <label className="label pt-0 pb-1">
+                <span className="label-text text-xs font-semibold">Období *</span>
+              </label>
+              <input
+                type="text"
+                className="input input-bordered input-sm"
+                placeholder="např. 801"
+                value={addForm.semester_id}
+                onChange={(e) => setAddForm(f => ({ ...f, semester_id: e.target.value }))}
+                required
+              />
+            </div>
+            <button
+              type="submit"
+              className="btn btn-primary btn-sm gap-1 self-end mb-0.5"
+              disabled={submitting}
+            >
+              {submitting ? (
+                <span className="loading loading-spinner loading-xs"></span>
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              Přidat
+            </button>
+          </form>
         </div>
       </div>
 
