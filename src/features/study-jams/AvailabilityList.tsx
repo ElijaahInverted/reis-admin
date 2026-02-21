@@ -74,7 +74,7 @@ export default function AvailabilityList() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee' });
+  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee', instantPair: false });
   const [submitting, setSubmitting] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -103,14 +103,43 @@ export default function AvailabilityList() {
     if (!addForm.studium.trim() || !addForm.course_code.trim()) return;
     setSubmitting(true);
     try {
-      const { error } = await supabase.from('study_jam_availability').insert({
+      const { data: newRow, error } = await supabase.from('study_jam_availability').insert({
         studium: addForm.studium.trim(),
         course_code: addForm.course_code.trim(),
         role: addForm.role,
         semester_id: '801',
-      });
+      }).select().single();
       if (error) throw error;
       toast.success(`${addForm.role} ${addForm.studium} přidán pro ${addForm.course_code}`);
+
+      if (addForm.instantPair) {
+        const counterparts = rawRows.filter(r => r.course_code === addForm.course_code.trim() && r.role !== addForm.role);
+        if (counterparts.length > 0) {
+          const counterpart = counterparts[Math.floor(Math.random() * counterparts.length)];
+          const tutorStudium = addForm.role === 'tutor' ? addForm.studium.trim() : counterpart.studium;
+          const tuteeStudium = addForm.role === 'tutee' ? addForm.studium.trim() : counterpart.studium;
+          
+          const { error: matchError } = await supabase.from('tutoring_matches').insert({
+            tutor_studium: tutorStudium,
+            tutee_studium: tuteeStudium,
+            course_code: addForm.course_code.trim(),
+            semester_id: '801',
+          });
+          
+          if (!matchError && newRow) {
+            await Promise.all([
+              supabase.from('study_jam_availability').delete().eq('id', newRow.id),
+              supabase.from('study_jam_availability').delete().eq('id', counterpart.id),
+            ]);
+            toast.success(`Okamžitě spárováno: tutor ${tutorStudium} ↔ tutee ${tuteeStudium}`);
+          } else if (matchError) {
+            toast.error(`Chyba při okamžitém párování: ${matchError.message}`);
+          }
+        } else {
+          toast.info('Žádný volný protějšek pro okamžité spárování.');
+        }
+      }
+
       setAddForm(f => ({ ...f, studium: '' }));
       fetchData();
     } catch (error: unknown) {
@@ -244,6 +273,17 @@ export default function AvailabilityList() {
                 <option value="tutor">Tutor</option>
                 <option value="tutee">Tutee</option>
               </select>
+            </div>
+            <div className="form-control mb-1.5 ml-2">
+              <label className="label cursor-pointer py-0 gap-2">
+                <input
+                  type="checkbox"
+                  className="checkbox checkbox-sm checkbox-primary"
+                  checked={addForm.instantPair}
+                  onChange={(e) => setAddForm(f => ({ ...f, instantPair: e.target.checked }))}
+                />
+                <span className="label-text text-xs leading-none">Ihned spárovat</span>
+              </label>
             </div>
             <button
               type="submit"
