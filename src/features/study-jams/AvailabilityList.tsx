@@ -161,32 +161,6 @@ export default function AvailabilityList() {
         supabase.from('study_jam_availability').delete().eq('id', tutor.id),
         supabase.from('study_jam_availability').delete().eq('id', tutee.id),
       ]);
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
-        const createdBy = session?.user?.email || 'study-jams';
-        const { error: notifError } = await supabase.from('notifications').insert([
-          {
-            association_id: 'admin',
-            title: 'Našli jsme ti tutora!',
-            body: `Byl/a jsi spárován/a s tutorem pro předmět ${courseCode}. Napiš mu na Teams.`,
-            link: 'study-jam-match',
-            expires_at: expiresAt,
-            created_by: createdBy,
-          },
-          {
-            association_id: 'admin',
-            title: 'Našli jsme ti tutee!',
-            body: `Byl/a jsi spárován/a s tuteem pro předmět ${courseCode}. Napiš mu na Teams.`,
-            link: 'study-jam-match',
-            expires_at: expiresAt,
-            created_by: createdBy,
-          },
-        ]);
-        if (notifError) console.error('[handleMatch] notification insert error', notifError);
-      } catch (notifErr) {
-        console.error('[handleMatch] notification error', notifErr);
-      }
       toast.success(`Spárováno: tutor ${tutor.studium} ↔ tutee ${tutee.studium} (${courseCode})`);
       fetchData();
     } catch (error: unknown) {
