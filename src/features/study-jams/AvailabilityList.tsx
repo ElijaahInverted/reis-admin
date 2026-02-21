@@ -1,14 +1,17 @@
 import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Users, RefreshCw, Plus, Shuffle, ChevronDown, ChevronRight } from 'lucide-react';
+import { Users, RefreshCw, Plus, Shuffle, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tables } from '@/lib/database.types';
 
 type AvailabilityRow = Tables<'study_jam_availability'>;
 
 interface TutoringMatchRow {
+  id: string;
   course_code: string;
   semester_id: string;
+  tutor_studium: string;
+  tutee_studium: string;
 }
 
 interface CourseAggregate {
@@ -65,6 +68,7 @@ function aggregate(rows: AvailabilityRow[], matchRows: TutoringMatchRow[]): Cour
 export default function AvailabilityList() {
   const [rows, setRows] = useState<CourseAggregate[]>([]);
   const [rawRows, setRawRows] = useState<AvailabilityRow[]>([]);
+  const [rawMatches, setRawMatches] = useState<TutoringMatchRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [matching, setMatching] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -78,12 +82,13 @@ export default function AvailabilityList() {
     try {
       const [availResult, matchResult] = await Promise.all([
         supabase.from('study_jam_availability').select('*'),
-        supabase.from('tutoring_matches').select('course_code, semester_id'),
+        supabase.from('tutoring_matches').select('id, course_code, semester_id, tutor_studium, tutee_studium'),
       ]);
       if (availResult.error) throw availResult.error;
       const availData = availResult.data || [];
       const matchRows: TutoringMatchRow[] = matchResult.data ?? [];
       setRawRows(availData);
+      setRawMatches(matchRows);
       setRows(aggregate(availData, matchRows));
       setLastRefresh(new Date());
     } catch (e) {
@@ -112,6 +117,28 @@ export default function AvailabilityList() {
       toast.error(error instanceof Error ? error.message : 'Chyba při ukládání');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleDeleteOptIn = async (id: string, studium: string) => {
+    try {
+      const { error } = await supabase.from('study_jam_availability').delete().eq('id', id);
+      if (error) throw error;
+      toast.success(`Opt-in ${studium} smazán`);
+      fetchData();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Chyba při mazání');
+    }
+  };
+
+  const handleDeleteMatch = async (id: string, tutorStudium: string, tuteeStudium: string) => {
+    try {
+      const { error } = await supabase.from('tutoring_matches').delete().eq('id', id);
+      if (error) throw error;
+      toast.success(`Párování ${tutorStudium} ↔ ${tuteeStudium} smazáno`);
+      fetchData();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : 'Chyba při mazání');
     }
   };
 
@@ -344,15 +371,42 @@ export default function AvailabilityList() {
                           <div>
                             <p className="font-semibold text-success mb-1">Tutoři ({tutors.length})</p>
                             {tutors.length === 0 ? <p className="text-base-content/40">—</p> : tutors.map(t => (
-                              <p key={t.id} className="font-mono text-base-content/70">{t.studium}</p>
+                              <div key={t.id} className="flex items-center gap-1.5">
+                                <span className="font-mono text-base-content/70">{t.studium}</span>
+                                <button onClick={() => handleDeleteOptIn(t.id, t.studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat opt-in">
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
                             ))}
                           </div>
                           <div>
                             <p className="font-semibold text-warning mb-1">Tutees ({tutees.length})</p>
                             {tutees.length === 0 ? <p className="text-base-content/40">—</p> : tutees.map(t => (
-                              <p key={t.id} className="font-mono text-base-content/70">{t.studium}</p>
+                              <div key={t.id} className="flex items-center gap-1.5">
+                                <span className="font-mono text-base-content/70">{t.studium}</span>
+                                <button onClick={() => handleDeleteOptIn(t.id, t.studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat opt-in">
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
                             ))}
                           </div>
+                          {(() => {
+                            const matches = rawMatches.filter(m => m.course_code === row.course_code);
+                            if (matches.length === 0) return null;
+                            return (
+                              <div>
+                                <p className="font-semibold text-info mb-1">Párování ({matches.length})</p>
+                                {matches.map(m => (
+                                  <div key={m.id} className="flex items-center gap-1.5">
+                                    <span className="font-mono text-base-content/70">{m.tutor_studium} ↔ {m.tutee_studium}</span>
+                                    <button onClick={() => handleDeleteMatch(m.id, m.tutor_studium, m.tutee_studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat párování">
+                                      <Trash2 className="w-3 h-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
                         </div>
                       </td>
                     </tr>
