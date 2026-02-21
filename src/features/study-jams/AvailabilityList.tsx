@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Users, RefreshCw, Plus, Shuffle, ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
+import { Users, RefreshCw, Plus, Shuffle, ChevronDown, ChevronRight, Trash2, ExternalLink, CheckSquare, Square } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tables } from '@/lib/database.types';
 
@@ -371,11 +371,17 @@ export default function AvailabilityList() {
                               <div>
                                 <p className="font-semibold text-info mb-1">Párování ({matches.length})</p>
                                 {matches.map(m => (
-                                  <div key={m.id} className="flex items-center gap-1.5">
-                                    <span className="font-mono text-base-content/70">{m.tutor_studium} ↔ {m.tutee_studium}</span>
-                                    <button onClick={() => handleDeleteMatch(m.id, m.tutor_studium, m.tutee_studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat párování">
-                                      <Trash2 className="w-3 h-3" />
-                                    </button>
+                                  <div key={m.id} className="space-y-2">
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="font-mono text-base-content/70">{m.tutor_studium} ↔ {m.tutee_studium}</span>
+                                      <button onClick={() => handleDeleteMatch(m.id, m.tutor_studium, m.tutee_studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat párování">
+                                        <Trash2 className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                    <div className="flex gap-3 pt-1">
+                                      <MatchSimulatorCard role="tutee" partnerStudium={m.tutor_studium} courseCode={m.course_code} />
+                                      <MatchSimulatorCard role="tutor" partnerStudium={m.tutee_studium} courseCode={m.course_code} />
+                                    </div>
                                   </div>
                                 ))}
                               </div>
@@ -392,6 +398,56 @@ export default function AvailabilityList() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function MatchSimulatorCard({ role, partnerStudium, courseCode }: {
+  role: 'tutor' | 'tutee';
+  partnerStudium: string;
+  courseCode: string;
+}) {
+  const [checklist, setChecklist] = useState([false, false]);
+  const isTutee = role === 'tutee';
+  const toggle = (i: number) => setChecklist(prev => prev.map((v, idx) => idx === i ? !v : v));
+  const checklistItems = isTutee
+    ? ['Napsal/a jsem tutorovi na Teams', 'Potvrdili jsme čas schůzky']
+    : ['Odpověděl/a jsem tuteovi na Teams', 'Potvrdili jsme čas schůzky'];
+
+  return (
+    <div className="bg-success/10 border border-success/30 rounded-lg px-3 py-2.5 w-64">
+      <p className="text-xs font-semibold text-success mb-0.5">
+        {isTutee ? 'Tutor nalezen' : 'Tutee přiřazen'} — {courseCode}
+      </p>
+      <p className="text-xs text-base-content/50 mb-1">
+        {isTutee ? 'Pohled tuteeho' : 'Pohled tutora'}
+      </p>
+      <p className="text-sm font-medium font-mono truncate">{partnerStudium}</p>
+      <div className="mt-2">
+        <a
+          href="https://teams.microsoft.com"
+          target="_blank"
+          rel="noreferrer"
+          className="btn btn-xs btn-success gap-1"
+        >
+          <ExternalLink className="w-3 h-3" />
+          Napsat na Teams
+        </a>
+      </div>
+      <div className="mt-2 space-y-1">
+        {checklistItems.map((label, i) => (
+          <button
+            key={i}
+            onClick={() => toggle(i)}
+            className="flex items-center gap-1.5 text-xs text-base-content/70 hover:text-base-content w-full text-left"
+          >
+            {checklist[i]
+              ? <CheckSquare className="w-3 h-3 text-success shrink-0" />
+              : <Square className="w-3 h-3 shrink-0" />}
+            {label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
