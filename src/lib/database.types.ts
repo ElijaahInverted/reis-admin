@@ -120,7 +120,7 @@ export type Database = {
           id: string
           role: string
           semester_id: string
-          studium: string
+          student_id: string
         }
         Insert: {
           course_code: string
@@ -128,7 +128,7 @@ export type Database = {
           id?: string
           role: string
           semester_id: string
-          studium: string
+          student_id: string
         }
         Update: {
           course_code?: string
@@ -136,7 +136,7 @@ export type Database = {
           id?: string
           role?: string
           semester_id?: string
-          studium?: string
+          student_id?: string
         }
         Relationships: []
       }
@@ -267,24 +267,24 @@ export type Database = {
           id: string
           matched_at: string
           semester_id: string
-          tutee_studium: string
-          tutor_studium: string
+          tutee_student_id: string
+          tutor_student_id: string
         }
         Insert: {
           course_code: string
           id?: string
           matched_at?: string
           semester_id: string
-          tutee_studium: string
-          tutor_studium: string
+          tutee_student_id: string
+          tutor_student_id: string
         }
         Update: {
           course_code?: string
           id?: string
           matched_at?: string
           semester_id?: string
-          tutee_studium?: string
-          tutor_studium?: string
+          tutee_student_id?: string
+          tutor_student_id?: string
         }
         Relationships: []
       }

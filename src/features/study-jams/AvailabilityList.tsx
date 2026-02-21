@@ -10,8 +10,8 @@ interface TutoringMatchRow {
   id: string;
   course_code: string;
   semester_id: string;
-  tutor_studium: string;
-  tutee_studium: string;
+  tutor_student_id: string;
+  tutee_student_id: string;
 }
 
 interface CourseAggregate {
@@ -74,7 +74,7 @@ export default function AvailabilityList() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee' });
+  const [addForm, setAddForm] = useState({ student_id: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee' });
   const [submitting, setSubmitting] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -82,7 +82,7 @@ export default function AvailabilityList() {
     try {
       const [availResult, matchResult] = await Promise.all([
         supabase.from('study_jam_availability').select('*'),
-        supabase.from('tutoring_matches').select('id, course_code, semester_id, tutor_studium, tutee_studium'),
+        supabase.from('tutoring_matches').select('id, course_code, semester_id, tutor_student_id, tutee_student_id'),
       ]);
       if (availResult.error) throw availResult.error;
       const availData = availResult.data || [];
@@ -100,18 +100,18 @@ export default function AvailabilityList() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addForm.studium.trim() || !addForm.course_code.trim()) return;
+    if (!addForm.student_id.trim() || !addForm.course_code.trim()) return;
     setSubmitting(true);
     try {
       const { error } = await supabase.from('study_jam_availability').insert({
-        studium: addForm.studium.trim(),
+        student_id: addForm.student_id.trim(),
         course_code: addForm.course_code.trim(),
         role: addForm.role,
         semester_id: '801',
       });
       if (error) throw error;
-      toast.success(`${addForm.role} ${addForm.studium} přidán pro ${addForm.course_code}`);
-      setAddForm(f => ({ ...f, studium: '' }));
+      toast.success(`${addForm.role} ${addForm.student_id} přidán pro ${addForm.course_code}`);
+      setAddForm(f => ({ ...f, student_id: '' }));
       fetchData();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Chyba při ukládání');
@@ -120,22 +120,22 @@ export default function AvailabilityList() {
     }
   };
 
-  const handleDeleteOptIn = async (id: string, studium: string) => {
+  const handleDeleteOptIn = async (id: string, studentId: string) => {
     try {
       const { error } = await supabase.from('study_jam_availability').delete().eq('id', id);
       if (error) throw error;
-      toast.success(`Opt-in ${studium} smazán`);
+      toast.success(`Opt-in ${studentId} smazán`);
       fetchData();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Chyba při mazání');
     }
   };
 
-  const handleDeleteMatch = async (id: string, tutorStudium: string, tuteeStudium: string) => {
+  const handleDeleteMatch = async (id: string, tutorStudentId: string, tuteeStudentId: string) => {
     try {
       const { error } = await supabase.from('tutoring_matches').delete().eq('id', id);
       if (error) throw error;
-      toast.success(`Párování ${tutorStudium} ↔ ${tuteeStudium} smazáno`);
+      toast.success(`Párování ${tutorStudentId} ↔ ${tuteeStudentId} smazáno`);
       fetchData();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Chyba při mazání');
@@ -203,8 +203,8 @@ export default function AvailabilityList() {
                 type="text"
                 className="input input-bordered input-sm"
                 placeholder="např. 149707"
-                value={addForm.studium}
-                onChange={(e) => setAddForm(f => ({ ...f, studium: e.target.value }))}
+                value={addForm.student_id}
+                onChange={(e) => setAddForm(f => ({ ...f, student_id: e.target.value }))}
                 required
               />
             </div>
@@ -335,8 +335,8 @@ export default function AvailabilityList() {
                             <p className="font-semibold text-success mb-1">Tutoři ({tutors.length})</p>
                             {tutors.length === 0 ? <p className="text-base-content/40">—</p> : tutors.map(t => (
                               <div key={t.id} className="flex items-center gap-1.5">
-                                <span className="font-mono text-base-content/70">{t.studium}</span>
-                                <button onClick={() => handleDeleteOptIn(t.id, t.studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat opt-in">
+                                <span className="font-mono text-base-content/70">{t.student_id}</span>
+                                <button onClick={() => handleDeleteOptIn(t.id, t.student_id)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat opt-in">
                                   <Trash2 className="w-3 h-3" />
                                 </button>
                               </div>
@@ -346,8 +346,8 @@ export default function AvailabilityList() {
                             <p className="font-semibold text-warning mb-1">Tutees ({tutees.length})</p>
                             {tutees.length === 0 ? <p className="text-base-content/40">—</p> : tutees.map(t => (
                               <div key={t.id} className="flex items-center gap-1.5">
-                                <span className="font-mono text-base-content/70">{t.studium}</span>
-                                <button onClick={() => handleDeleteOptIn(t.id, t.studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat opt-in">
+                                <span className="font-mono text-base-content/70">{t.student_id}</span>
+                                <button onClick={() => handleDeleteOptIn(t.id, t.student_id)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat opt-in">
                                   <Trash2 className="w-3 h-3" />
                                 </button>
                               </div>
@@ -361,8 +361,8 @@ export default function AvailabilityList() {
                                 <p className="font-semibold text-info mb-1">Párování ({matches.length})</p>
                                 {matches.map(m => (
                                   <div key={m.id} className="flex items-center gap-1.5">
-                                    <span className="font-mono text-base-content/70">{m.tutor_studium} ↔ {m.tutee_studium}</span>
-                                    <button onClick={() => handleDeleteMatch(m.id, m.tutor_studium, m.tutee_studium)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat párování">
+                                    <span className="font-mono text-base-content/70">{m.tutor_student_id} ↔ {m.tutee_student_id}</span>
+                                    <button onClick={() => handleDeleteMatch(m.id, m.tutor_student_id, m.tutee_student_id)} className="opacity-40 hover:opacity-100 hover:text-error transition-opacity" title="Smazat párování">
                                       <Trash2 className="w-3 h-3" />
                                     </button>
                                   </div>
