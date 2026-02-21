@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { BookOpen } from 'lucide-react';
-import SessionList from './SessionList';
 import KillerCourseList from './KillerCourseList';
 import AvailabilityList from './AvailabilityList';
 
@@ -8,10 +7,10 @@ interface StudyJamsViewProps {
   isReisAdmin: boolean;
 }
 
-type Tab = 'sessions' | 'availability' | 'killer-courses';
+type Tab = 'availability' | 'killer-courses';
 
 export default function StudyJamsView({ isReisAdmin }: StudyJamsViewProps) {
-  const [activeTab, setActiveTab] = useState<Tab>('sessions');
+  const [activeTab, setActiveTab] = useState<Tab>('availability');
 
   if (!isReisAdmin) {
     return (
@@ -32,13 +31,6 @@ export default function StudyJamsView({ isReisAdmin }: StudyJamsViewProps) {
       <div role="tablist" className="tabs tabs-box">
         <button
           role="tab"
-          className={`tab ${activeTab === 'sessions' ? 'tab-active' : ''}`}
-          onClick={() => setActiveTab('sessions')}
-        >
-          Sessiony
-        </button>
-        <button
-          role="tab"
           className={`tab ${activeTab === 'availability' ? 'tab-active' : ''}`}
           onClick={() => setActiveTab('availability')}
         >
@@ -53,7 +45,6 @@ export default function StudyJamsView({ isReisAdmin }: StudyJamsViewProps) {
         </button>
       </div>
 
-      {activeTab === 'sessions' && <SessionList />}
       {activeTab === 'availability' && <AvailabilityList />}
       {activeTab === 'killer-courses' && <KillerCourseList />}
     </div>
