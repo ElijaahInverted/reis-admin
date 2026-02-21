@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, Fragment } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Users, RefreshCw, Plus, Shuffle, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
@@ -134,6 +134,32 @@ export default function AvailabilityList() {
         supabase.from('study_jam_availability').delete().eq('id', tutor.id),
         supabase.from('study_jam_availability').delete().eq('id', tutee.id),
       ]);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+        const createdBy = session?.user?.email || 'study-jams';
+        const { error: notifError } = await supabase.from('notifications').insert([
+          {
+            association_id: 'admin',
+            title: 'Našli jsme ti tutora!',
+            body: `Byl/a jsi spárován/a s tutorem pro předmět ${courseCode}. Napiš mu na Teams.`,
+            link: 'study-jam-match',
+            expires_at: expiresAt,
+            created_by: createdBy,
+          },
+          {
+            association_id: 'admin',
+            title: 'Našli jsme ti tutee!',
+            body: `Byl/a jsi spárován/a s tuteem pro předmět ${courseCode}. Napiš mu na Teams.`,
+            link: 'study-jam-match',
+            expires_at: expiresAt,
+            created_by: createdBy,
+          },
+        ]);
+        if (notifError) console.error('[handleMatch] notification insert error', notifError);
+      } catch (notifErr) {
+        console.error('[handleMatch] notification error', notifErr);
+      }
       toast.success(`Spárováno: tutor ${tutor.studium} ↔ tutee ${tutee.studium} (${courseCode})`);
       fetchData();
     } catch (error: unknown) {
@@ -265,8 +291,8 @@ export default function AvailabilityList() {
                   const isExpanded = expanded === row.course_code;
                   const tutors = rawRows.filter(r => r.course_code === row.course_code && r.role === 'tutor');
                   const tutees = rawRows.filter(r => r.course_code === row.course_code && r.role === 'tutee');
-                  return (<>
-                  <tr key={row.course_code} className="border-b border-base-200 hover:bg-base-200/40 transition-colors cursor-pointer" onClick={() => setExpanded(isExpanded ? null : row.course_code)}>
+                  return (<Fragment key={row.course_code}>
+                  <tr className="border-b border-base-200 hover:bg-base-200/40 transition-colors cursor-pointer" onClick={() => setExpanded(isExpanded ? null : row.course_code)}>
                     <td>
                       <span className="flex items-center gap-1.5">
                         {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-base-content/40" /> : <ChevronRight className="w-3.5 h-3.5 text-base-content/40" />}
@@ -331,7 +357,7 @@ export default function AvailabilityList() {
                       </td>
                     </tr>
                   )}
-                  </>);
+                  </Fragment>);
                 })}
               </tbody>
             </table>
