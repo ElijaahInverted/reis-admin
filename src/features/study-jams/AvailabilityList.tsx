@@ -70,7 +70,7 @@ export default function AvailabilityList() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee', semester_id: '' });
+  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee', semester_id: '801' });
   const [submitting, setSubmitting] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -181,12 +181,12 @@ export default function AvailabilityList() {
           <form onSubmit={handleAdd} className="flex flex-wrap gap-2 items-end">
             <div className="form-control min-w-28">
               <label className="label pt-0 pb-1">
-                <span className="label-text text-xs font-semibold">Studium *</span>
+                <span className="label-text text-xs font-semibold">Student ID *</span>
               </label>
               <input
                 type="text"
                 className="input input-bordered input-sm"
-                placeholder="např. 12345"
+                placeholder="např. 149707"
                 value={addForm.studium}
                 onChange={(e) => setAddForm(f => ({ ...f, studium: e.target.value }))}
                 required
