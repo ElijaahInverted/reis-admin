@@ -34,7 +34,7 @@ export default function StudyJamsView({ isReisAdmin }: StudyJamsViewProps) {
           className={`tab ${activeTab === 'availability' ? 'tab-active' : ''}`}
           onClick={() => setActiveTab('availability')}
         >
-          Opt-ins
+          reUčko
         </button>
         <button
           role="tab"

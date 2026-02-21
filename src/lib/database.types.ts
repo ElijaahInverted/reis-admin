@@ -294,6 +294,10 @@ export type Database = {
     }
     Functions: {
       get_my_role: { Args: never; Returns: string }
+      match_study_jam: {
+        Args: { p_course_code: string }
+        Returns: undefined
+      }
       increment_notification_click: {
         Args: { row_id: string }
         Returns: undefined

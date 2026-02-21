@@ -66,7 +66,7 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
           )}
           {isReisAdmin && (
             <NavItem
-              item={{ id: 'study-jams', label: 'Study Jams', icon: BookOpen }}
+              item={{ id: 'study-jams', label: 'reUčko', icon: BookOpen }}
               isActive={currentView === 'study-jams'}
               onMouseEnter={() => {}}
               onMouseLeave={() => {}}
@@ -159,7 +159,7 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
                 className={`p-2 rounded-lg flex flex-col items-center ${currentView === 'study-jams' ? 'text-primary' : 'text-base-content/60'}`}
             >
                 <BookOpen size={24} />
-                <span className="text-[10px] mt-1">Study Jams</span>
+                <span className="text-[10px] mt-1">reUčko</span>
             </button>
         )}
         <button
