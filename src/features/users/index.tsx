@@ -8,7 +8,7 @@ import { Tables } from '@/lib/database.types';
 const tempSupabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
   import.meta.env.VITE_SUPABASE_ANON_KEY,
-  { auth: { persistSession: false, autoRefreshToken: false } }
+  { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'sb-temp-auth' } }
 );
 
 interface UsersViewProps {
