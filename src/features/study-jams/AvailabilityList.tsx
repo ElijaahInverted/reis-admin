@@ -70,7 +70,7 @@ export default function AvailabilityList() {
   const [expanded, setExpanded] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee', semester_id: '801' });
+  const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee' });
   const [submitting, setSubmitting] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -95,14 +95,14 @@ export default function AvailabilityList() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addForm.studium.trim() || !addForm.course_code.trim() || !addForm.semester_id.trim()) return;
+    if (!addForm.studium.trim() || !addForm.course_code.trim()) return;
     setSubmitting(true);
     try {
       const { error } = await supabase.from('study_jam_availability').insert({
         studium: addForm.studium.trim(),
         course_code: addForm.course_code.trim(),
         role: addForm.role,
-        semester_id: addForm.semester_id.trim(),
+        semester_id: '801',
       });
       if (error) throw error;
       toast.success(`${addForm.role} ${addForm.studium} přidán pro ${addForm.course_code}`);
@@ -217,19 +217,6 @@ export default function AvailabilityList() {
                 <option value="tutor">Tutor</option>
                 <option value="tutee">Tutee</option>
               </select>
-            </div>
-            <div className="form-control min-w-24">
-              <label className="label pt-0 pb-1">
-                <span className="label-text text-xs font-semibold">Období *</span>
-              </label>
-              <input
-                type="text"
-                className="input input-bordered input-sm"
-                placeholder="např. 801"
-                value={addForm.semester_id}
-                onChange={(e) => setAddForm(f => ({ ...f, semester_id: e.target.value }))}
-                required
-              />
             </div>
             <button
               type="submit"
