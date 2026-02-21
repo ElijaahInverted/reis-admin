@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Users, RefreshCw, Plus, Shuffle } from 'lucide-react';
+import { Users, RefreshCw, Plus, Shuffle, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tables } from '@/lib/database.types';
 
@@ -67,6 +67,7 @@ export default function AvailabilityList() {
   const [rawRows, setRawRows] = useState<AvailabilityRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [matching, setMatching] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [addForm, setAddForm] = useState({ studium: '', course_code: '', role: 'tutor' as 'tutor' | 'tutee', semester_id: '' });
@@ -273,10 +274,17 @@ export default function AvailabilityList() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
-                  <tr key={row.course_code} className="border-b border-base-200 hover:bg-base-200/40 transition-colors">
+                {rows.map((row) => {
+                  const isExpanded = expanded === row.course_code;
+                  const tutors = rawRows.filter(r => r.course_code === row.course_code && r.role === 'tutor');
+                  const tutees = rawRows.filter(r => r.course_code === row.course_code && r.role === 'tutee');
+                  return (<>
+                  <tr key={row.course_code} className="border-b border-base-200 hover:bg-base-200/40 transition-colors cursor-pointer" onClick={() => setExpanded(isExpanded ? null : row.course_code)}>
                     <td>
-                      <span className="badge badge-outline font-mono text-xs">{row.course_code}</span>
+                      <span className="flex items-center gap-1.5">
+                        {isExpanded ? <ChevronDown className="w-3.5 h-3.5 text-base-content/40" /> : <ChevronRight className="w-3.5 h-3.5 text-base-content/40" />}
+                        <span className="badge badge-outline font-mono text-xs">{row.course_code}</span>
+                      </span>
                     </td>
                     <td className="text-center">
                       {row.tutorCount > 0 ? (
@@ -302,7 +310,7 @@ export default function AvailabilityList() {
                     <td className="text-xs text-base-content/60">{formatDate(row.oldestAt)}</td>
                     <td className="text-center">
                       <button
-                        onClick={() => handleMatch(row.course_code)}
+                        onClick={(e) => { e.stopPropagation(); handleMatch(row.course_code); }}
                         disabled={row.tutorCount === 0 || row.tuteeCount === 0 || matching === row.course_code}
                         className="btn btn-xs btn-primary gap-1"
                         title="Náhodně spárovat 1 tutora + 1 tutea"
@@ -316,7 +324,28 @@ export default function AvailabilityList() {
                       </button>
                     </td>
                   </tr>
-                ))}
+                  {isExpanded && (
+                    <tr key={`${row.course_code}-detail`} className="border-b border-base-200 bg-base-200/30">
+                      <td colSpan={6} className="px-4 py-3">
+                        <div className="flex gap-8 text-xs">
+                          <div>
+                            <p className="font-semibold text-success mb-1">Tutoři ({tutors.length})</p>
+                            {tutors.length === 0 ? <p className="text-base-content/40">—</p> : tutors.map(t => (
+                              <p key={t.id} className="font-mono text-base-content/70">{t.studium}</p>
+                            ))}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-warning mb-1">Tutees ({tutees.length})</p>
+                            {tutees.length === 0 ? <p className="text-base-content/40">—</p> : tutees.map(t => (
+                              <p key={t.id} className="font-mono text-base-content/70">{t.studium}</p>
+                            ))}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                  </>);
+                })}
               </tbody>
             </table>
           </div>
