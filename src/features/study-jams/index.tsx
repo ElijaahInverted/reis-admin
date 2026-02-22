@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import KillerCourseList from './KillerCourseList';
 import AvailabilityList from './AvailabilityList';
+import DismissalList from './DismissalList';
 
 interface StudyJamsViewProps {
   isReisAdmin: boolean;
 }
 
-type Tab = 'availability' | 'killer-courses';
+type Tab = 'availability' | 'killer-courses' | 'dismissals';
 
 export default function StudyJamsView({ isReisAdmin }: StudyJamsViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>('availability');
@@ -38,6 +39,13 @@ export default function StudyJamsView({ isReisAdmin }: StudyJamsViewProps) {
         </button>
         <button
           role="tab"
+          className={`tab ${activeTab === 'dismissals' ? 'tab-active' : ''}`}
+          onClick={() => setActiveTab('dismissals')}
+        >
+          Odmitnutí
+        </button>
+        <button
+          role="tab"
           className={`tab ${activeTab === 'killer-courses' ? 'tab-active' : ''}`}
           onClick={() => setActiveTab('killer-courses')}
         >
@@ -46,6 +54,7 @@ export default function StudyJamsView({ isReisAdmin }: StudyJamsViewProps) {
       </div>
 
       {activeTab === 'availability' && <AvailabilityList />}
+      {activeTab === 'dismissals' && <DismissalList />}
       {activeTab === 'killer-courses' && <KillerCourseList />}
     </div>
   );
