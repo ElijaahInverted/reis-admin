@@ -10,7 +10,7 @@ interface AppLayoutProps {
   children: ReactNode;
   associationName?: string;
   associationId?: string;
-  currentView?: string; // e.g. 'notifications', 'tutorials'
+  currentView?: string; // e.g. 'notifications'
   isReisAdmin?: boolean;
   ghostingAssociation?: { id: string, name: string } | null;
   onGhostSelect?: (assoc: { id: string, name: string } | null) => void;
@@ -75,7 +75,6 @@ export default function AppLayout({
                     <div className="mb-8">
                         <h1 className="text-3xl font-bold tracking-tight text-base-content">
                             {inferredView === 'notifications' && 'Notifikace'}
-                            {inferredView === 'tutorials' && 'Tutoriály'}
                             {inferredView === 'accounts' && 'Správa účtů'}
                             {inferredView === 'study-jams' && 'Study Jams'}
                         </h1>

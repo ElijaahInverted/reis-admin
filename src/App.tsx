@@ -7,7 +7,6 @@ import AppLayout from '@/components/AppLayout';
 import NotificationsView from '@/features/notifications';
 import UsersView from '@/features/users';
 import StudyJamsView from '@/features/study-jams';
-// import TutorialsView from '@/features/tutorials';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -89,7 +88,6 @@ function App() {
                 <Routes>
                     <Route path="/" element={<Navigate to="/notifications" replace />} />
                     <Route path="/notifications" element={<NotificationsView associationId={effectiveAssociationId} isReisAdmin={isReisAdmin} isGhosting={ghostingAssociation !== null} />} />
-                    {/* <Route path="/tutorials" element={<TutorialsView associationId={effectiveAssociationId} />} /> */}
                     <Route path="/accounts" element={<UsersView associationId={effectiveAssociationId} isReisAdmin={isReisAdmin} />} />
                     <Route path="/study-jams" element={<StudyJamsView isReisAdmin={isReisAdmin} />} />
                     <Route path="*" element={<Navigate to="/notifications" replace />} />

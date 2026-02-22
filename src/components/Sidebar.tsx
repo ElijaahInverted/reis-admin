@@ -2,7 +2,6 @@ import {
   Bell,
   Users,
   BookOpen,
-  // GraduationCap,
   LogOut
 } from 'lucide-react';
 import { NavItem, MenuItem } from './Sidebar/NavItem';
@@ -22,7 +21,6 @@ interface SidebarProps {
 
 const MENU_ITEMS: MenuItem[] = [
   { id: 'notifications', label: 'Notifikace', icon: Bell },
-  // { id: 'tutorials', label: 'Tutoriály', icon: GraduationCap },
 ];
 
 export const Sidebar = ({ currentView, onViewChange, associationName, associationId, isReisAdmin, ghostingAssociation, onGhostSelect, ownAssociationId }: SidebarProps) => {
