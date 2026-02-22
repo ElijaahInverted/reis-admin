@@ -140,127 +140,6 @@ export type Database = {
         }
         Relationships: []
       }
-      study_jam_sessions: {
-        Row: {
-          created_at: string
-          created_by: string
-          current_count: number
-          id: string
-          killer_course_id: string
-          location: string | null
-          max_participants: number
-          max_tutees: number
-          notes: string | null
-          scheduled_at: string | null
-          status: string
-          tutee_count: number
-          tutor_studium: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          current_count?: number
-          id?: string
-          killer_course_id: string
-          location?: string | null
-          max_participants?: number
-          max_tutees?: number
-          notes?: string | null
-          scheduled_at?: string | null
-          status?: string
-          tutee_count?: number
-          tutor_studium?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          current_count?: number
-          id?: string
-          killer_course_id?: string
-          location?: string | null
-          max_participants?: number
-          max_tutees?: number
-          notes?: string | null
-          scheduled_at?: string | null
-          status?: string
-          tutee_count?: number
-          tutor_studium?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "study_jam_sessions_killer_course_id_fkey"
-            columns: ["killer_course_id"]
-            isOneToOne: false
-            referencedRelation: "killer_courses"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tutorial_slides: {
-        Row: {
-          id: string
-          layout: string
-          left_image_url: string | null
-          order: number
-          tutorial_id: string
-        }
-        Insert: {
-          id?: string
-          layout: string
-          left_image_url?: string | null
-          order: number
-          tutorial_id: string
-        }
-        Update: {
-          id?: string
-          layout?: string
-          left_image_url?: string | null
-          order?: number
-          tutorial_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tutorial_slides_tutorial_id_fkey"
-            columns: ["tutorial_id"]
-            isOneToOne: false
-            referencedRelation: "tutorials"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      tutorials: {
-        Row: {
-          association_id: string
-          created_at: string
-          created_by: string
-          description: string | null
-          id: string
-          is_published: boolean
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          association_id: string
-          created_at?: string
-          created_by: string
-          description?: string | null
-          id?: string
-          is_published?: boolean
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          association_id?: string
-          created_at?: string
-          created_by?: string
-          description?: string | null
-          id?: string
-          is_published?: boolean
-          title?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       tutoring_matches: {
         Row: {
           course_code: string
@@ -294,10 +173,6 @@ export type Database = {
     }
     Functions: {
       get_my_role: { Args: never; Returns: string }
-      match_study_jam: {
-        Args: { p_course_code: string }
-        Returns: undefined
-      }
       increment_notification_click: {
         Args: { row_id: string }
         Returns: undefined
@@ -306,6 +181,7 @@ export type Database = {
         Args: { row_id: string }
         Returns: undefined
       }
+      match_study_jam: { Args: { p_course_code: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
