@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'sonner';
 import { supabase } from './lib/supabase';
 import LoginScreen from '@/features/auth/LoginScreen';
+import { useInactivityLogout } from './hooks/useInactivityLogout';
 import AppLayout from '@/components/AppLayout';
 import NotificationsView from '@/features/notifications';
 import UsersView from '@/features/users';
@@ -16,6 +17,9 @@ function App() {
     return saved ? JSON.parse(saved) : null;
   });
   const [loading, setLoading] = useState(true);
+
+  useInactivityLogout(!!session);
+
 
   useEffect(() => {
     sessionStorage.setItem('ghosting_association', JSON.stringify(ghostingAssociation));
