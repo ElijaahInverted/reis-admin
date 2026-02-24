@@ -49,7 +49,10 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
 
   return (
     <div className="space-y-6">
-      {/* Events list first */}
+      {/* Social proof first — what others are doing */}
+      <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
+
+      {/* Your events */}
       <div className="space-y-4">
         <h3 className="font-bold text-xl px-1 flex items-center gap-2">
           <CalendarDays className="w-5 h-5 text-primary" />
@@ -75,9 +78,6 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
           <CalendarImportModal associationId={associationId} onSuccess={fetchNotifications} />
         )}
       </div>
-
-      {/* Activity from other spolky */}
-      <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
     </div>
   );
 }

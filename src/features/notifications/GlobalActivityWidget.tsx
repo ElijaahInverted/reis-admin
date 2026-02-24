@@ -20,12 +20,14 @@ export default function GlobalActivityWidget({ currentAssociationId, isReisAdmin
     async function fetchActivity() {
       setLoading(true);
       try {
+        const twoWeeksAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
         let query = supabase
           .from('notifications')
           .select('*')
           .gt('expires_at', new Date().toISOString())
+          .gte('created_at', twoWeeksAgo)
           .order('created_at', { ascending: false })
-          .limit(20);
+          .limit(10);
 
         if (!isReisAdmin && currentAssociationId) {
           query = query.neq('association_id', currentAssociationId);
