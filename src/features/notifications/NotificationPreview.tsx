@@ -4,10 +4,11 @@ import { Bell, Users } from 'lucide-react';
 interface NotificationPreviewProps {
   title: string;
   associationId: string | null;
-  associationName?: string; // For alt text
+  associationName?: string;
+  eventDate?: string;
 }
 
-export default function NotificationPreview({ title, associationId, associationName }: NotificationPreviewProps) {
+export default function NotificationPreview({ title, associationId, associationName, eventDate }: NotificationPreviewProps) {
   // Logic from reis/src/components/NotificationFeed.tsx
   const assocId = associationId || 'admin';
   const isAcademic = assocId.startsWith('academic_');
@@ -74,7 +75,9 @@ export default function NotificationPreview({ title, associationId, associationN
                             
                             {/* Date */}
                             <div className="text-sm text-base-content flex-shrink-0">
-                                Dnes
+                                {eventDate
+                                  ? new Date(eventDate + 'T00:00:00').toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })
+                                  : 'Dnes'}
                             </div>
                         </div>
                     </div>

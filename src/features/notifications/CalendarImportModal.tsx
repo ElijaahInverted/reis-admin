@@ -1,7 +1,8 @@
-import { useState, useRef, useCallback } from 'react';
+import { Fragment, useState, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Calendar, LogIn, ChevronRight, Check, X } from 'lucide-react';
+import { computeDates, toLocalDateString } from '@/lib/utils';
 
 interface CalendarImportModalProps {
   associationId: string;
@@ -29,24 +30,6 @@ interface ImportRow {
   eventDate: string;
   visibleFrom: string;
   expiresAt: string;
-}
-
-function toLocalDateString(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function computeDates(eventDateStr: string) {
-  const eventDate = new Date(eventDateStr + 'T00:00:00');
-  const now = new Date();
-  const sevenBefore = new Date(eventDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const visibleFrom = sevenBefore > now ? sevenBefore : now;
-  return {
-    visibleFrom: visibleFrom.toISOString(),
-    expiresAt: new Date(eventDateStr + 'T23:59:59').toISOString(),
-  };
 }
 
 export default function CalendarImportModal({ associationId, onSuccess }: CalendarImportModalProps) {
@@ -201,6 +184,23 @@ export default function CalendarImportModal({ associationId, onSuccess }: Calend
 
   const selectedCount = rows.filter((r) => r.selected).length;
 
+  const groupedRows = useMemo(() => {
+    const groups: { label: string; key: string; indices: number[] }[] = [];
+    const map = new Map<string, number[]>();
+    rows.forEach((row, idx) => {
+      const d = new Date(row.eventDate + 'T00:00:00');
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(idx);
+    });
+    for (const [key, indices] of map) {
+      const [y, m] = key.split('-');
+      const label = new Date(Number(y), Number(m) - 1).toLocaleDateString('cs-CZ', { month: 'long', year: 'numeric' });
+      groups.push({ label, key, indices });
+    }
+    return groups;
+  }, [rows]);
+
   return (
     <>
       <button onClick={open} className="btn btn-outline gap-2 w-full">
@@ -270,14 +270,7 @@ export default function CalendarImportModal({ associationId, onSuccess }: Calend
                     <table className="table table-sm">
                       <thead>
                         <tr>
-                          <th>
-                            <input
-                              type="checkbox"
-                              className="checkbox checkbox-sm"
-                              checked={rows.every((r) => r.selected)}
-                              onChange={(e) => setRows((prev) => prev.map((r) => ({ ...r, selected: e.target.checked })))}
-                            />
-                          </th>
+                          <th className="w-8"></th>
                           <th>Název</th>
                           <th>Odkaz</th>
                           <th>Datum události</th>
@@ -286,50 +279,79 @@ export default function CalendarImportModal({ associationId, onSuccess }: Calend
                         </tr>
                       </thead>
                       <tbody>
-                        {rows.map((row, idx) => (
-                          <tr key={row.eventId} className={row.selected ? '' : 'opacity-50'}>
-                            <td>
-                              <input
-                                type="checkbox"
-                                className="checkbox checkbox-sm"
-                                checked={row.selected}
-                                onChange={(e) => updateRow(idx, { selected: e.target.checked })}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="text"
-                                className="input input-xs input-bordered w-full min-w-40"
-                                value={row.title}
-                                maxLength={100}
-                                onChange={(e) => updateRow(idx, { title: e.target.value })}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="url"
-                                className="input input-xs input-bordered w-full min-w-32"
-                                value={row.link}
-                                placeholder="https://..."
-                                onChange={(e) => updateRow(idx, { link: e.target.value })}
-                              />
-                            </td>
-                            <td>
-                              <input
-                                type="date"
-                                className="input input-xs input-bordered"
-                                value={row.eventDate}
-                                onChange={(e) => updateRow(idx, { eventDate: e.target.value })}
-                              />
-                            </td>
-                            <td className="text-xs text-base-content/60">
-                              {toLocalDateString(new Date(row.visibleFrom))}
-                            </td>
-                            <td className="text-xs text-base-content/60">
-                              {toLocalDateString(new Date(row.expiresAt))}
-                            </td>
-                          </tr>
-                        ))}
+                        {groupedRows.map((group) => {
+                          const groupSelected = group.indices.every((i) => rows[i].selected);
+                          return (
+                            <Fragment key={group.key}>
+                              <tr className="bg-base-200/50">
+                                <td colSpan={6} className="py-2">
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      className="checkbox checkbox-sm"
+                                      checked={groupSelected}
+                                      onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setRows((prev) => prev.map((r, i) =>
+                                          group.indices.includes(i) ? { ...r, selected: checked } : r
+                                        ));
+                                      }}
+                                    />
+                                    <span className="font-semibold text-sm capitalize">{group.label}</span>
+                                    <span className="text-xs text-base-content/50">({group.indices.length})</span>
+                                  </label>
+                                </td>
+                              </tr>
+                              {group.indices.map((idx) => {
+                                const row = rows[idx];
+                                return (
+                                  <tr key={row.eventId} className={row.selected ? '' : 'opacity-50'}>
+                                    <td>
+                                      <input
+                                        type="checkbox"
+                                        className="checkbox checkbox-sm"
+                                        checked={row.selected}
+                                        onChange={(e) => updateRow(idx, { selected: e.target.checked })}
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="text"
+                                        className="input input-xs input-bordered w-full min-w-40"
+                                        value={row.title}
+                                        maxLength={100}
+                                        onChange={(e) => updateRow(idx, { title: e.target.value })}
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="url"
+                                        className="input input-xs input-bordered w-full min-w-32"
+                                        value={row.link}
+                                        placeholder="https://..."
+                                        onChange={(e) => updateRow(idx, { link: e.target.value })}
+                                      />
+                                    </td>
+                                    <td>
+                                      <input
+                                        type="date"
+                                        className="input input-xs input-bordered"
+                                        value={row.eventDate}
+                                        onChange={(e) => updateRow(idx, { eventDate: e.target.value })}
+                                      />
+                                    </td>
+                                    <td className="text-xs text-base-content/60">
+                                      {toLocalDateString(new Date(row.visibleFrom))}
+                                    </td>
+                                    <td className="text-xs text-base-content/60">
+                                      {toLocalDateString(new Date(row.expiresAt))}
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </Fragment>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

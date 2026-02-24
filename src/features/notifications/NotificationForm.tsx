@@ -1,64 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Plus, X, Send, Link as LinkIcon } from 'lucide-react';
+import { Plus, X, Send, Link as LinkIcon, CalendarDays } from 'lucide-react';
+import { computeDates, toLocalDateString } from '@/lib/utils';
 import NotificationPreview from './NotificationPreview';
 
 interface NotificationFormProps {
   associationId: string | null;
   associationName?: string;
   onSuccess: () => void;
-  isReisAdmin?: boolean;
 }
 
-export default function NotificationForm({ associationId, associationName, onSuccess, isReisAdmin }: NotificationFormProps) {
+export default function NotificationForm({ associationId, associationName, onSuccess }: NotificationFormProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [title, setTitle] = useState('');
   const [link, setLink] = useState('');
+  const [eventDate, setEventDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [weeklyCount, setWeeklyCount] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!isExpanded || isReisAdmin) { setWeeklyCount(0); return; }
-    if (!associationId) return;
-    setWeeklyCount(null);
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-    supabase
-      .from('notifications')
-      .select('id', { count: 'exact', head: true })
-      .eq('association_id', associationId)
-      .gte('created_at', since)
-      .then(({ count }) => setWeeklyCount(count ?? 0));
-  }, [isExpanded, associationId, isReisAdmin]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!associationId) return;
+    if (!associationId || !eventDate) return;
 
     setSubmitting(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      
+      const { visibleFrom, expiresAt } = computeDates(eventDate);
+
       const { error } = await supabase.from('notifications').insert([{
         association_id: associationId,
         title: title,
         body: title,
         link: link || null,
-        expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        visible_from: visibleFrom,
+        expires_at: expiresAt,
         created_by: session?.user?.email || 'unknown',
       }]);
 
       if (error) throw error;
 
-      toast.success('Notifikace byla publikována');
+      toast.success('Událost byla naplánována');
       setTitle('');
       setLink('');
-      // Keep expanded if user wants to send another, or collapse? 
-      // Let's collapse for cleaner UX or ask user. For now, collapse.
+      setEventDate('');
       setIsExpanded(false);
       onSuccess();
-    } catch (error: any) {
-      toast.error(error.message || 'Chyba při ukládání');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Chyba při ukládání';
+      toast.error(message);
     } finally {
       setSubmitting(false);
     }
@@ -66,8 +55,9 @@ export default function NotificationForm({ associationId, associationName, onSuc
 
   const handleCancel = () => {
     setIsExpanded(false);
-    // Optional: clear fields? standard behavior is usually keeping draft
   };
+
+  const todayStr = toLocalDateString(new Date());
 
   if (!isExpanded) {
     return (
@@ -76,38 +66,8 @@ export default function NotificationForm({ associationId, associationName, onSuc
         className="btn btn-primary w-full gap-2 shadow-sm animate-fade-in"
       >
         <Plus size={20} />
-        Vytvořit novou notifikaci
+        Vytvořit novou událost
       </button>
-    );
-  }
-
-  if (weeklyCount === null) {
-    return (
-      <div className="card bg-base-100 shadow-md border border-base-content/10 animate-fade-in-up">
-        <div className="card-body p-6 flex flex-row items-center gap-3">
-          <span className="loading loading-spinner loading-sm"></span>
-          <span className="text-base-content/70 text-sm">Načítání…</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (weeklyCount >= 3) {
-    return (
-      <div className="card bg-base-100 shadow-md border border-base-content/10 animate-fade-in-up">
-        <div className="card-body p-6">
-          <div className="flex items-start justify-between gap-4">
-            <div role="alert" className="alert alert-warning flex-1">
-              <span>
-                Tento týden byl dosažen limit 3 notifikací. Novou notifikaci lze vytvořit po uplynutí 7 dní od nejstarší z nich.
-              </span>
-            </div>
-            <button onClick={handleCancel} className="btn btn-ghost btn-sm btn-square shrink-0">
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-      </div>
     );
   }
 
@@ -115,18 +75,42 @@ export default function NotificationForm({ associationId, associationName, onSuc
     <div className="card bg-base-100 shadow-md border border-base-content/10 animate-fade-in-up">
       <div className="card-body p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="card-title text-xl">Nová notifikace</h2>
+          <h2 className="card-title text-xl">Nová událost</h2>
           <button onClick={handleCancel} className="btn btn-ghost btn-sm btn-square">
             <X size={20} />
           </button>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col xl:flex-row gap-8">
-            
+
             {/* LEFT COLUMN: Inputs */}
             <div className="flex-1 space-y-5">
-              
+
+              {/* Event Date Input */}
+              <div className="form-control">
+                <label className="label pt-0 pb-1">
+                  <span className="label-text font-semibold flex items-center gap-1">
+                    <CalendarDays size={14} /> Datum události *
+                  </span>
+                </label>
+                <input
+                  type="date"
+                  value={eventDate}
+                  onChange={e => setEventDate(e.target.value)}
+                  min={todayStr}
+                  className="input input-bordered w-full"
+                  required
+                />
+                {eventDate && (
+                  <div className="label pt-1 pb-0">
+                    <span className="label-text-alt text-sm text-base-content/70">
+                      Viditelné od {new Date(computeDates(eventDate).visibleFrom).toLocaleDateString('cs-CZ')} · Vyprší {new Date(computeDates(eventDate).expiresAt).toLocaleDateString('cs-CZ')}
+                    </span>
+                  </div>
+                )}
+              </div>
+
               {/* Message Input */}
               <div className="form-control">
                 <label className="label pt-0 pb-1">
@@ -135,13 +119,13 @@ export default function NotificationForm({ associationId, associationName, onSuc
                     {title.length}/100
                   </span>
                 </label>
-                <input 
-                    type="text" 
+                <input
+                    type="text"
                     value={title}
                     onChange={e => setTitle(e.target.value)}
-                    placeholder="Např. Přijďte dnes na náš event!" 
-                    className="input input-bordered w-full bg-base-100" 
-                    required 
+                    placeholder="Např. Přijďte na náš event!"
+                    className="input input-bordered w-full bg-base-100"
+                    required
                     maxLength={100}
                     autoFocus
                 />
@@ -158,6 +142,9 @@ export default function NotificationForm({ associationId, associationName, onSuc
                   <span className="label-text font-semibold flex items-center gap-1">
                     <LinkIcon size={14} /> Odkaz
                   </span>
+                  <span className="label-text-alt text-xs text-base-content/50">
+                    Lze přidat i později
+                  </span>
                 </label>
                 <input
                   type="url"
@@ -172,10 +159,11 @@ export default function NotificationForm({ associationId, associationName, onSuc
 
             {/* RIGHT COLUMN: Preview */}
             <div className="flex-shrink-0 flex justify-center xl:justify-start xl:block border-t xl:border-t-0 xl:border-l border-base-200 pt-6 xl:pt-0 xl:pl-8">
-                <NotificationPreview 
-                    title={title} 
+                <NotificationPreview
+                    title={title}
                     associationId={associationId}
                     associationName={associationName}
+                    eventDate={eventDate}
                 />
             </div>
 
@@ -190,7 +178,7 @@ export default function NotificationForm({ associationId, associationName, onSuc
               {submitting ? <span className="loading loading-spinner"></span> : (
                 <>
                   <Send size={18} />
-                  Publikovat
+                  Naplánovat
                 </>
               )}
             </button>

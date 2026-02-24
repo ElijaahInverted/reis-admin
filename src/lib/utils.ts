@@ -1,4 +1,22 @@
-export function formatDate(iso: string | null | undefined): string { 
+export function toLocalDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+export function computeDates(eventDateStr: string): { visibleFrom: string; expiresAt: string } {
+  const eventDate = new Date(eventDateStr + 'T00:00:00');
+  const now = new Date();
+  const sevenBefore = new Date(eventDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const visibleFrom = sevenBefore > now ? sevenBefore : now;
+  return {
+    visibleFrom: visibleFrom.toISOString(),
+    expiresAt: new Date(eventDateStr + 'T23:59:59').toISOString(),
+  };
+}
+
+export function formatDate(iso: string | null | undefined): string {
   if (!iso) return '';
   const date = new Date(iso);
   return date.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short', year: 'numeric' });

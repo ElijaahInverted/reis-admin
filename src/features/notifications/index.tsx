@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
-import { Bell } from 'lucide-react';
+import { CalendarDays } from 'lucide-react';
 import NotificationForm from './NotificationForm';
 import NotificationList from './NotificationList';
 import CalendarImportModal from './CalendarImportModal';
@@ -31,7 +31,7 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
 
       if (error) throw error;
       setNotifications(data || []);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Fetch error:', error);
       toast.error('Chyba načítání dat');
     } finally {
@@ -49,32 +49,35 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
 
   return (
     <div className="space-y-6">
-      <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
-      
+      {/* Events list first */}
+      <div className="space-y-4">
+        <h3 className="font-bold text-xl px-1 flex items-center gap-2">
+          <CalendarDays className="w-5 h-5 text-primary" />
+          Vaše události
+        </h3>
+
+        {loading ? (
+          <div className="space-y-3">
+            <div className="skeleton h-20 w-full rounded-box opacity-20"></div>
+            <div className="skeleton h-20 w-full rounded-box opacity-20"></div>
+          </div>
+        ) : (
+          <NotificationList notifications={notifications} onDelete={fetchNotifications} isReisAdmin={isReisAdmin} />
+        )}
+      </div>
+
+      {/* Create form + calendar import */}
       <div className="grid grid-cols-4 gap-2">
         <div className="col-span-3">
-          <NotificationForm associationId={associationId} onSuccess={fetchNotifications} isReisAdmin={isReisAdmin} />
+          <NotificationForm associationId={associationId} onSuccess={fetchNotifications} />
         </div>
         {associationId && (
           <CalendarImportModal associationId={associationId} onSuccess={fetchNotifications} />
         )}
       </div>
 
-      <div className="space-y-4 pt-4">
-        <h3 className="font-bold text-xl px-1 flex items-center gap-2">
-          <Bell className="w-5 h-5 text-primary" />
-          Aktivní notifikace
-        </h3>
-
-        {loading ? (
-             <div className="space-y-3">
-                <div className="skeleton h-20 w-full rounded-box opacity-20"></div>
-                <div className="skeleton h-20 w-full rounded-box opacity-20"></div>
-             </div>
-        ) : (
-            <NotificationList notifications={notifications} onDelete={fetchNotifications} isReisAdmin={isReisAdmin} />
-        )}
-      </div>
+      {/* Activity from other spolky */}
+      <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
     </div>
   );
 }
