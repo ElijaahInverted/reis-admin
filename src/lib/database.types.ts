@@ -54,6 +54,7 @@ export type Database = {
           priority: string | null
           title: string
           view_count: number
+          visible_from: string | null
         }
         Insert: {
           association_id: string
@@ -67,6 +68,7 @@ export type Database = {
           priority?: string | null
           title: string
           view_count?: number
+          visible_from?: string | null
         }
         Update: {
           association_id?: string
@@ -80,6 +82,7 @@ export type Database = {
           priority?: string | null
           title?: string
           view_count?: number
+          visible_from?: string | null
         }
         Relationships: []
       }

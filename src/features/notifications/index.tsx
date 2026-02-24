@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 import { Bell } from 'lucide-react';
 import NotificationForm from './NotificationForm';
 import NotificationList from './NotificationList';
+import CalendarImportModal from './CalendarImportModal';
 import GlobalActivityWidget from './GlobalActivityWidget';
 import { Tables } from '@/lib/database.types';
 
@@ -50,7 +51,14 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
     <div className="space-y-6">
       <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
       
-      <NotificationForm associationId={associationId} onSuccess={fetchNotifications} isReisAdmin={isReisAdmin} />
+      <div className="grid grid-cols-4 gap-2">
+        <div className="col-span-3">
+          <NotificationForm associationId={associationId} onSuccess={fetchNotifications} isReisAdmin={isReisAdmin} />
+        </div>
+        {associationId && (
+          <CalendarImportModal associationId={associationId} onSuccess={fetchNotifications} />
+        )}
+      </div>
 
       <div className="space-y-4 pt-4">
         <h3 className="font-bold text-xl px-1 flex items-center gap-2">
