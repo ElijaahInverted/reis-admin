@@ -73,7 +73,7 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
             <div className="skeleton h-20 w-full rounded-box opacity-20"></div>
           </div>
         ) : (
-          <NotificationList notifications={notifications} onDelete={fetchNotifications} isReisAdmin={isReisAdmin} />
+          <NotificationList notifications={notifications} onDelete={fetchNotifications} />
         )}
       </div>
     </div>

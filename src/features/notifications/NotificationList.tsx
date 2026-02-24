@@ -1,176 +1,207 @@
 import { useState } from 'react';
-import { Trash2, Eye, MousePointer2, Calendar, Link as LinkIcon, BellOff, Check, X, Pencil } from 'lucide-react';
+import { Trash2, Eye, MousePointer2, BellOff, Check, X, Pencil } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Tables } from '@/lib/database.types';
+import { computeDates, toLocalDateString } from '@/lib/utils';
 
 interface NotificationListProps {
   notifications: Tables<'notifications'>[];
   onDelete: () => void;
-  isReisAdmin?: boolean;
 }
 
-type NotificationStatus = 'scheduled' | 'active' | 'active_no_link' | 'expired';
-
-function getStatus(n: Tables<'notifications'>): NotificationStatus {
-  const now = new Date();
-  if (new Date(n.expires_at) < now) return 'expired';
-  if (n.visible_from && new Date(n.visible_from) > now) return 'scheduled';
-  if (!n.link) return 'active_no_link';
-  return 'active';
+interface EditState {
+  id: string;
+  title: string;
+  date: string;
+  link: string;
 }
 
-const statusConfig: Record<NotificationStatus, { label: string; className: string }> = {
-  scheduled: { label: 'Naplánováno', className: 'badge-warning text-warning-content' },
-  active: { label: 'Aktivní', className: 'badge-success text-white' },
-  active_no_link: { label: 'Aktivní – chybí odkaz', className: 'badge-warning badge-outline' },
-  expired: { label: 'Expirováno', className: 'badge-ghost opacity-60' },
-};
+function needsLink(n: Tables<'notifications'>): boolean {
+  return !n.link && new Date(n.expires_at) >= new Date();
+}
 
-export default function NotificationList({ notifications, onDelete, isReisAdmin }: NotificationListProps) {
-  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
-  const [linkValue, setLinkValue] = useState('');
-  const [savingLink, setSavingLink] = useState(false);
+export default function NotificationList({ notifications, onDelete }: NotificationListProps) {
+  const [editing, setEditing] = useState<EditState | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  const active = notifications.filter(n => new Date(n.expires_at) >= new Date());
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Opravdu smazat tuto notifikaci?')) return;
+    if (!confirm('Opravdu smazat tuto událost?')) return;
     try {
       const { error } = await supabase.from('notifications').delete().eq('id', id);
       if (error) throw error;
-      toast.success('Notifikace smazána');
+      toast.success('Událost smazána');
       onDelete();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Chyba mazání';
-      toast.error(message);
+      toast.error(error instanceof Error ? error.message : 'Chyba mazání');
     }
   };
 
-  const startEditLink = (n: Tables<'notifications'>) => {
-    setEditingLinkId(n.id);
-    setLinkValue(n.link || '');
+  const startEdit = (n: Tables<'notifications'>) => {
+    setEditing({
+      id: n.id,
+      title: n.title,
+      date: toLocalDateString(new Date(n.expires_at)),
+      link: n.link || '',
+    });
   };
 
-  const cancelEditLink = () => {
-    setEditingLinkId(null);
-    setLinkValue('');
-  };
+  const cancelEdit = () => setEditing(null);
 
-  const saveLink = async (id: string) => {
-    setSavingLink(true);
+  const saveEdit = async () => {
+    if (!editing || !editing.date || !editing.title) return;
+    setSaving(true);
     try {
+      const { visibleFrom, expiresAt } = computeDates(editing.date);
       const { error } = await supabase
         .from('notifications')
-        .update({ link: linkValue || null })
-        .eq('id', id);
+        .update({
+          title: editing.title,
+          body: editing.title,
+          link: editing.link || null,
+          visible_from: visibleFrom,
+          expires_at: expiresAt,
+        })
+        .eq('id', editing.id);
       if (error) throw error;
-      toast.success('Odkaz uložen');
-      setEditingLinkId(null);
-      onDelete(); // triggers refetch
+      toast.success('Uloženo');
+      setEditing(null);
+      onDelete();
     } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : 'Chyba při ukládání odkazu';
-      toast.error(message);
+      toast.error(error instanceof Error ? error.message : 'Chyba při ukládání');
     } finally {
-      setSavingLink(false);
+      setSaving(false);
     }
   };
 
-  if (!notifications?.length) {
+  if (!active.length) {
     return (
-      <div className="card bg-base-100 border border-base-content/10">
-        <div className="card-body text-center py-12 opacity-50">
-          <BellOff className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="text-base">Zatím žádné události</p>
-          <p className="text-sm opacity-70">Vytvořte první událost výše</p>
-        </div>
+      <div className="text-center py-8 opacity-40">
+        <BellOff className="w-8 h-8 mx-auto mb-2" />
+        <p className="text-sm">Žádné aktivní události</p>
       </div>
     );
   }
 
+  const sorted = [...active].sort((a, b) => {
+    const aN = needsLink(a) ? 0 : 1;
+    const bN = needsLink(b) ? 0 : 1;
+    return aN - bN;
+  });
+
   return (
-    <div className="space-y-4">
-      {notifications.map((n) => {
-        const status = getStatus(n);
-        const badge = statusConfig[status];
-        const isEditing = editingLinkId === n.id;
+    <div className="overflow-x-auto">
+      <table className="table">
+        <thead>
+          <tr>
+            <th>Událost</th>
+            <th className="w-28">Datum</th>
+            <th className="w-24">Stav</th>
+            <th className="text-center w-16"><Eye className="w-4 h-4 inline" /></th>
+            <th className="text-center w-16"><MousePointer2 className="w-4 h-4 inline" /></th>
+            <th>Odkaz</th>
+            <th className="w-24"></th>
+            <th className="w-10"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {sorted.map((n) => {
+            const missing = needsLink(n);
+            const isEditing = editing?.id === n.id;
 
-        return (
-          <div key={n.id} className="card bg-base-100 shadow-md border border-base-content/10 hover:shadow-lg hover:border-primary/30 transition-all group">
-            <div className="card-body flex-row justify-between items-center py-5 px-6">
-
-              <div className="flex-1 min-w-0 pr-4">
-                <div className="flex items-center gap-3 mb-1 flex-wrap">
-                  <span className="font-semibold text-base truncate">{n.title}</span>
-                  <span className={`badge badge-sm font-bold ${badge.className}`}>{badge.label}</span>
-                  <span className="inline-flex items-center gap-1">
-                    <span className="badge badge-sm gap-1 font-semibold"><Eye className="w-3.5 h-3.5" /> {n.view_count || 0} zobrazení</span>
-                    <span className="badge badge-sm gap-1 font-semibold"><MousePointer2 className="w-3.5 h-3.5" /> {n.click_count || 0} kliků</span>
-                  </span>
-                  {isReisAdmin && (
-                    <span className="badge badge-sm badge-outline font-mono opacity-60" title={n.association_id}>
-                      {n.association_id.slice(0, 8)}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-2 text-xs text-base-content/60">
-                  <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {n.created_at ? new Date(n.created_at).toLocaleDateString('cs-CZ') : '-'}</span>
-                  {!isEditing && n.link && (
-                    <a href={n.link} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 hover:text-primary transition-colors">
-                      <LinkIcon className="w-4 h-4" /> Odkaz
-                    </a>
-                  )}
-                </div>
-
-                {/* Inline link editing */}
-                {isEditing ? (
-                  <div className="flex items-center gap-2 mt-2">
+            if (isEditing) {
+              return (
+                <tr key={n.id} className="bg-base-200/50">
+                  <td>
+                    <input
+                      type="text"
+                      value={editing.title}
+                      onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                      className="input input-sm input-bordered w-full min-w-40"
+                      maxLength={100}
+                      autoFocus
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="date"
+                      value={editing.date}
+                      onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                      min={toLocalDateString(new Date())}
+                      className="input input-sm input-bordered [color-scheme:dark] cursor-pointer"
+                    />
+                  </td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>
                     <input
                       type="url"
-                      value={linkValue}
-                      onChange={(e) => setLinkValue(e.target.value)}
+                      value={editing.link}
+                      onChange={(e) => setEditing({ ...editing, link: e.target.value })}
                       placeholder="https://..."
-                      className="input input-sm input-bordered flex-1"
+                      className="input input-sm input-bordered w-full"
                       maxLength={200}
-                      autoFocus
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') { e.preventDefault(); saveLink(n.id); }
-                        if (e.key === 'Escape') cancelEditLink();
+                        if (e.key === 'Enter') { e.preventDefault(); saveEdit(); }
+                        if (e.key === 'Escape') cancelEdit();
                       }}
                     />
-                    <button
-                      className="btn btn-sm btn-primary btn-square"
-                      onClick={() => saveLink(n.id)}
-                      disabled={savingLink}
-                    >
-                      {savingLink ? <span className="loading loading-spinner loading-xs" /> : <Check size={16} />}
+                  </td>
+                  <td>
+                    <button className="btn btn-sm btn-primary gap-1" onClick={saveEdit} disabled={saving}>
+                      {saving ? <span className="loading loading-spinner loading-sm" /> : <Check size={16} />}
+                      Uložit
                     </button>
-                    <button className="btn btn-sm btn-ghost btn-square" onClick={cancelEditLink}>
+                  </td>
+                  <td>
+                    <button className="btn btn-sm btn-ghost btn-square" onClick={cancelEdit}>
                       <X size={16} />
                     </button>
-                  </div>
-                ) : status !== 'expired' && (
-                  <button
-                    className="btn btn-xs btn-ghost gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={() => startEditLink(n)}
-                  >
-                    <Pencil size={12} />
-                    {n.link ? 'Upravit odkaz' : 'Přidat odkaz'}
+                  </td>
+                </tr>
+              );
+            }
+
+            return (
+              <tr key={n.id}>
+                <td className="font-medium">{n.title}</td>
+                <td className="text-sm text-base-content/70">
+                  {new Date(n.expires_at).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })}
+                </td>
+                <td>
+                  {missing
+                    ? <span className="badge badge-outline badge-sm font-bold text-warning border-warning whitespace-nowrap">Chybí odkaz</span>
+                    : <span className="badge badge-success badge-sm font-bold text-success-content whitespace-nowrap">Připraveno</span>}
+                </td>
+                <td className="text-center font-semibold">{n.view_count || 0}</td>
+                <td className="text-center font-semibold">{n.click_count || 0}</td>
+                <td>
+                  {n.link ? (
+                    <a href={n.link} target="_blank" rel="noopener noreferrer" className="link link-hover text-xs truncate max-w-48 block">
+                      {n.link}
+                    </a>
+                  ) : (
+                    <span className="text-xs text-base-content/30">—</span>
+                  )}
+                </td>
+                <td>
+                  <button className="btn btn-ghost btn-xs gap-1" onClick={() => startEdit(n)}>
+                    <Pencil size={12} /> Upravit
                   </button>
-                )}
-              </div>
-
-              <button
-                className="btn btn-ghost btn-sm btn-square text-error opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => handleDelete(n.id)}
-                title="Smazat"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-
-            </div>
-          </div>
-        );
-      })}
+                </td>
+                <td>
+                  <button className="btn btn-ghost btn-xs btn-square text-error" onClick={() => handleDelete(n.id)} title="Smazat">
+                    <Trash2 size={14} />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </div>
   );
 }
