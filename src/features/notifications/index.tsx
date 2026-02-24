@@ -25,6 +25,7 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
       let query = supabase
         .from('notifications')
         .select('*')
+        .gte('expires_at', new Date().toISOString())
         .order('created_at', { ascending: false });
       if (!isReisAdmin || isGhosting) query = query.eq('association_id', associationId!);
       const { data, error } = await query;
@@ -49,18 +50,15 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
 
   return (
     <div className="space-y-6">
-      {/* Social proof first — what others are doing */}
       <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
 
-      {/* Create form + calendar import — act on the motivation */}
       <div className={`grid gap-3 ${associationId ? 'grid-cols-2' : 'grid-cols-1'}`}>
-        <NotificationForm associationId={associationId} onSuccess={fetchNotifications} />
+        <NotificationForm associationId={associationId} onRefresh={fetchNotifications} />
         {associationId && (
           <CalendarImportModal associationId={associationId} onSuccess={fetchNotifications} />
         )}
       </div>
 
-      {/* Your events — management view */}
       <div className="space-y-4">
         <h3 className="font-bold text-xl px-1 flex items-center gap-2">
           <CalendarDays className="w-5 h-5 text-primary" />
@@ -73,7 +71,7 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
             <div className="skeleton h-20 w-full rounded-box opacity-20"></div>
           </div>
         ) : (
-          <NotificationList notifications={notifications} onDelete={fetchNotifications} />
+          <NotificationList notifications={notifications} onRefresh={fetchNotifications} />
         )}
       </div>
     </div>

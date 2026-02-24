@@ -4,10 +4,11 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Tables } from '@/lib/database.types';
 import { computeDates, toLocalDateString } from '@/lib/utils';
+import DatePicker from '@/components/DatePicker';
 
 interface NotificationListProps {
   notifications: Tables<'notifications'>[];
-  onDelete: () => void;
+  onRefresh: () => void;
 }
 
 interface EditState {
@@ -21,11 +22,11 @@ function needsLink(n: Tables<'notifications'>): boolean {
   return !n.link && new Date(n.expires_at) >= new Date();
 }
 
-export default function NotificationList({ notifications, onDelete }: NotificationListProps) {
+export default function NotificationList({ notifications, onRefresh }: NotificationListProps) {
   const [editing, setEditing] = useState<EditState | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const active = notifications.filter(n => new Date(n.expires_at) >= new Date());
+  const active = notifications;
 
   const handleDelete = async (id: string) => {
     if (!confirm('Opravdu smazat tuto událost?')) return;
@@ -33,7 +34,7 @@ export default function NotificationList({ notifications, onDelete }: Notificati
       const { error } = await supabase.from('notifications').delete().eq('id', id);
       if (error) throw error;
       toast.success('Událost smazána');
-      onDelete();
+      onRefresh();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Chyba mazání');
     }
@@ -68,7 +69,7 @@ export default function NotificationList({ notifications, onDelete }: Notificati
       if (error) throw error;
       toast.success('Uloženo');
       setEditing(null);
-      onDelete();
+      onRefresh();
     } catch (error: unknown) {
       toast.error(error instanceof Error ? error.message : 'Chyba při ukládání');
     } finally {
@@ -120,17 +121,16 @@ export default function NotificationList({ notifications, onDelete }: Notificati
                       value={editing.title}
                       onChange={(e) => setEditing({ ...editing, title: e.target.value })}
                       className="input input-sm input-bordered w-full min-w-40"
-                      maxLength={100}
+                      maxLength={35}
                       autoFocus
                     />
                   </td>
                   <td>
-                    <input
-                      type="date"
+                    <DatePicker
                       value={editing.date}
-                      onChange={(e) => setEditing({ ...editing, date: e.target.value })}
+                      onChange={(d) => setEditing({ ...editing, date: d })}
                       min={toLocalDateString(new Date())}
-                      className="input input-sm input-bordered [color-scheme:dark] cursor-pointer"
+                      className="w-full"
                     />
                   </td>
                   <td></td>

@@ -38,6 +38,7 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "react-day-picker": "^9.13.2",
     "react-router-dom": "^7.12.0",
     "sonner": "^2.0.7"
   }

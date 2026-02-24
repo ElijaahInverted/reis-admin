@@ -319,7 +319,7 @@ export default function CalendarImportModal({ associationId, onSuccess }: Calend
                                         type="text"
                                         className="input input-xs input-bordered w-full min-w-40"
                                         value={row.title}
-                                        maxLength={100}
+                                        maxLength={35}
                                         onChange={(e) => updateRow(idx, { title: e.target.value })}
                                       />
                                     </td>
