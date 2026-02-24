@@ -52,7 +52,15 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
       {/* Social proof first — what others are doing */}
       <GlobalActivityWidget currentAssociationId={associationId} isReisAdmin={isReisAdmin} />
 
-      {/* Your events */}
+      {/* Create form + calendar import — act on the motivation */}
+      <div className={`grid gap-3 ${associationId ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        <NotificationForm associationId={associationId} onSuccess={fetchNotifications} />
+        {associationId && (
+          <CalendarImportModal associationId={associationId} onSuccess={fetchNotifications} />
+        )}
+      </div>
+
+      {/* Your events — management view */}
       <div className="space-y-4">
         <h3 className="font-bold text-xl px-1 flex items-center gap-2">
           <CalendarDays className="w-5 h-5 text-primary" />
@@ -66,16 +74,6 @@ export default function NotificationsView({ associationId, isReisAdmin, isGhosti
           </div>
         ) : (
           <NotificationList notifications={notifications} onDelete={fetchNotifications} isReisAdmin={isReisAdmin} />
-        )}
-      </div>
-
-      {/* Create form + calendar import */}
-      <div className="grid grid-cols-4 gap-2">
-        <div className="col-span-3">
-          <NotificationForm associationId={associationId} onSuccess={fetchNotifications} />
-        </div>
-        {associationId && (
-          <CalendarImportModal associationId={associationId} onSuccess={fetchNotifications} />
         )}
       </div>
     </div>

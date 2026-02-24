@@ -106,7 +106,7 @@
 
 [data-theme="mendelu"] {
   --color-primary: #79be15;
-  --btn-primary-content: #ffffff;
+  --btn-primary-content: #1a2e00;
   --color-secondary: #8dc843;
   --color-accent: #00548f;
   --color-neutral: #444444;
@@ -118,7 +118,7 @@
 
 [data-theme="mendelu-dark"] {
   --color-primary: #79be15;
-  --btn-primary-content: #ffffff;
+  --btn-primary-content: #1a2e00;
   --color-secondary: #8dc843;
   --color-accent: #3b82f6;
   --color-neutral: #374151;
