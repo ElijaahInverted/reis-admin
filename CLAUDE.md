@@ -43,6 +43,5 @@ React 19 SPA with:
 
 Required in `.env`:
 - `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY` — public anon key (safe to expose client-side, RLS enforces access)
-
-**Note:** `VITE_SUPABASE_SERVICE_ROLE_KEY` must NOT be used client-side — it bypasses all RLS.
+- `VITE_SUPABASE_ANON_KEY` — public anon key (kept for reference, not currently used)
+- `VITE_SUPABASE_SERVICE_ROLE_KEY` — service role key, bypasses RLS. Used because this is a private admin tool (not public-facing). The reis extension uses anon key with RPCs; the admin needs direct table access for management operations.

@@ -9,7 +9,6 @@ type AvailabilityRow = Tables<'study_jam_availability'>;
 interface TutoringMatchRow {
   id: string;
   course_code: string;
-  semester_id: string;
   tutor_student_id: string;
   tutee_student_id: string;
 }
@@ -82,7 +81,7 @@ export default function AvailabilityList() {
     try {
       const [availResult, matchResult] = await Promise.all([
         supabase.from('study_jam_availability').select('*'),
-        supabase.from('tutoring_matches').select('id, course_code, semester_id, tutor_student_id, tutee_student_id'),
+        supabase.from('tutoring_matches').select('id, course_code, tutor_student_id, tutee_student_id'),
       ]);
       if (availResult.error) throw availResult.error;
       const availData = availResult.data || [];
@@ -107,7 +106,6 @@ export default function AvailabilityList() {
         student_id: addForm.student_id.trim(),
         course_code: addForm.course_code.trim(),
         role: addForm.role,
-        semester_id: '801',
       });
       if (error) throw error;
       toast.success(`${addForm.role} ${addForm.student_id} přidán pro ${addForm.course_code}`);

@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Ban, RefreshCw, Trash2, User, BookOpen, Calendar } from 'lucide-react';
+import { Ban, RefreshCw, Trash2, User, BookOpen } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface DismissalRow {
   id: string;
   student_id: string;
   course_code: string;
-  semester_id: string;
   created_at: string;
 }
 
@@ -100,7 +99,6 @@ export default function DismissalList() {
                 <tr className="border-b border-base-300">
                   <th className="font-semibold text-base-content/70">Student ID</th>
                   <th className="font-semibold text-base-content/70">Předmět</th>
-                  <th className="font-semibold text-base-content/70">Období</th>
                   <th className="font-semibold text-base-content/70">Datum</th>
                   <th className="font-semibold text-base-content/70 text-center">Akce</th>
                 </tr>
@@ -118,12 +116,6 @@ export default function DismissalList() {
                       <div className="flex items-center gap-2">
                         <BookOpen className="w-3.5 h-3.5 text-base-content/40" />
                         <span className="badge badge-outline badge-sm font-mono">{d.course_code}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-3.5 h-3.5 text-base-content/40" />
-                        <span className="text-xs">{d.semester_id}</span>
                       </div>
                     </td>
                     <td className="text-xs text-base-content/60">

@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       killer_courses: {
@@ -122,7 +147,6 @@ export type Database = {
           created_at: string
           id: string
           role: string
-          semester_id: string
           student_id: string
         }
         Insert: {
@@ -130,7 +154,6 @@ export type Database = {
           created_at?: string
           id?: string
           role: string
-          semester_id: string
           student_id: string
         }
         Update: {
@@ -138,7 +161,27 @@ export type Database = {
           created_at?: string
           id?: string
           role?: string
-          semester_id?: string
+          student_id?: string
+        }
+        Relationships: []
+      }
+      study_jam_dismissals: {
+        Row: {
+          course_code: string
+          created_at: string
+          id: string
+          student_id: string
+        }
+        Insert: {
+          course_code: string
+          created_at?: string
+          id?: string
+          student_id: string
+        }
+        Update: {
+          course_code?: string
+          created_at?: string
+          id?: string
           student_id?: string
         }
         Relationships: []
@@ -148,7 +191,6 @@ export type Database = {
           course_code: string
           id: string
           matched_at: string
-          semester_id: string
           tutee_student_id: string
           tutor_student_id: string
         }
@@ -156,7 +198,6 @@ export type Database = {
           course_code: string
           id?: string
           matched_at?: string
-          semester_id: string
           tutee_student_id: string
           tutor_student_id: string
         }
@@ -164,7 +205,6 @@ export type Database = {
           course_code?: string
           id?: string
           matched_at?: string
-          semester_id?: string
           tutee_student_id?: string
           tutor_student_id?: string
         }
@@ -175,6 +215,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_study_jam_availability: {
+        Args: { p_course_code: string; p_student_id: string }
+        Returns: undefined
+      }
+      dismiss_study_jam_suggestion: {
+        Args: { p_course_code: string; p_student_id: string }
+        Returns: undefined
+      }
       get_my_role: { Args: never; Returns: string }
       increment_notification_click: {
         Args: { row_id: string }
@@ -185,6 +233,14 @@ export type Database = {
         Returns: undefined
       }
       match_study_jam: { Args: { p_course_code: string }; Returns: undefined }
+      register_study_jam_availability: {
+        Args: { p_course_code: string; p_role: string; p_student_id: string }
+        Returns: undefined
+      }
+      withdraw_study_jam_match: {
+        Args: { p_course_code: string; p_student_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
@@ -313,6 +369,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
