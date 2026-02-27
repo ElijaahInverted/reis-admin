@@ -8,6 +8,7 @@ import AppLayout from '@/components/AppLayout';
 import NotificationsView from '@/features/notifications';
 import UsersView from '@/features/users';
 import StudyJamsView from '@/features/study-jams';
+import AnalyticsView from '@/features/analytics/AnalyticsView';
 
 function App() {
   const [session, setSession] = useState<any>(null);
@@ -94,6 +95,7 @@ function App() {
                     <Route path="/notifications" element={<NotificationsView associationId={effectiveAssociationId} isReisAdmin={isReisAdmin} isGhosting={ghostingAssociation !== null} />} />
                     <Route path="/accounts" element={<UsersView associationId={effectiveAssociationId} isReisAdmin={isReisAdmin} />} />
                     <Route path="/study-jams" element={<StudyJamsView isReisAdmin={isReisAdmin} />} />
+                    <Route path="/analytics" element={<AnalyticsView />} />
                     <Route path="*" element={<Navigate to="/notifications" replace />} />
                 </Routes>
             </AppLayout>

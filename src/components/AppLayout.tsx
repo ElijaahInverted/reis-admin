@@ -77,6 +77,7 @@ export default function AppLayout({
                             {inferredView === 'notifications' && 'Notifikace'}
                             {inferredView === 'accounts' && 'Správa účtů'}
                             {inferredView === 'study-jams' && 'Study Jams'}
+                            {inferredView === 'analytics' && 'Analytika'}
                         </h1>
                         <p className="text-base text-base-content/60 font-medium mt-1">
                             {associationName || 'Načítání...'}

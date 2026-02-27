@@ -2,6 +2,7 @@ import {
   Bell,
   Users,
   BookOpen,
+  BarChart2,
   LogOut
 } from 'lucide-react';
 import { NavItem, MenuItem } from './Sidebar/NavItem';
@@ -69,6 +70,15 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
               onMouseEnter={() => {}}
               onMouseLeave={() => {}}
               onClick={() => onViewChange('study-jams')}
+            />
+          )}
+          {isReisAdmin && (
+            <NavItem
+              item={{ id: 'analytics', label: 'Analytika', icon: BarChart2 }}
+              isActive={currentView === 'analytics'}
+              onMouseEnter={() => {}}
+              onMouseLeave={() => {}}
+              onClick={() => onViewChange('analytics')}
             />
           )}
           {isReisAdmin && onGhostSelect && (
@@ -158,6 +168,15 @@ export const Sidebar = ({ currentView, onViewChange, associationName, associatio
             >
                 <BookOpen size={24} />
                 <span className="text-[10px] mt-1">reUčko</span>
+            </button>
+        )}
+        {isReisAdmin && (
+            <button
+                onClick={() => onViewChange('analytics')}
+                className={`p-2 rounded-lg flex flex-col items-center ${currentView === 'analytics' ? 'text-primary' : 'text-base-content/60'}`}
+            >
+                <BarChart2 size={24} />
+                <span className="text-[10px] mt-1">Analytika</span>
             </button>
         )}
         <button

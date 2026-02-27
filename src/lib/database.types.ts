@@ -39,6 +39,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      daily_active_usage: {
+        Row: {
+          student_id: string
+          usage_date: string
+          open_count: number
+        }
+        Insert: {
+          student_id: string
+          usage_date?: string
+          open_count?: number
+        }
+        Update: {
+          student_id?: string
+          usage_date?: string
+          open_count?: number
+        }
+        Relationships: []
+      }
+      feedback_responses: {
+        Row: {
+          id: string
+          student_id: string
+          faculty_id: string | null
+          study_semester: number | null
+          feedback_type: string
+          value: string
+          semester_code: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          student_id: string
+          faculty_id?: string | null
+          study_semester?: number | null
+          feedback_type: string
+          value: string
+          semester_code: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          student_id?: string
+          faculty_id?: string | null
+          study_semester?: number | null
+          feedback_type?: string
+          value?: string
+          semester_code?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
       killer_courses: {
         Row: {
           course_code: string
@@ -215,6 +266,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      submit_feedback: {
+        Args: {
+          p_student_id: string
+          p_faculty_id: string
+          p_study_semester: number
+          p_feedback_type: string
+          p_value: string
+          p_semester_code: string
+        }
+        Returns: undefined
+      }
+      track_daily_usage: {
+        Args: { p_student_id: string }
+        Returns: undefined
+      }
       delete_study_jam_availability: {
         Args: { p_course_code: string; p_student_id: string }
         Returns: undefined
