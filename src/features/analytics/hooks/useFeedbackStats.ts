@@ -5,17 +5,16 @@ interface FeedbackStats {
     npsDistribution: { rating: string; count: number }[];
     avgNps: number;
     totalResponses: number;
-    faculties: string[];
     semesters: string[];
 }
 
-export function useFeedbackStats(facultyFilter?: string, semesterFilter?: string) {
+export function useFeedbackStats(semesterFilter?: string) {
     const [stats, setStats] = useState<FeedbackStats | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchStats();
-    }, [facultyFilter, semesterFilter]);
+    }, [semesterFilter]);
 
     async function fetchStats() {
         setLoading(true);
@@ -25,7 +24,6 @@ export function useFeedbackStats(facultyFilter?: string, semesterFilter?: string
             .select('*')
             .eq('feedback_type', 'nps');
 
-        if (facultyFilter) query = query.eq('faculty_id', facultyFilter);
         if (semesterFilter) query = query.eq('semester_code', semesterFilter);
 
         const { data: rows } = await query;
@@ -45,16 +43,15 @@ export function useFeedbackStats(facultyFilter?: string, semesterFilter?: string
         const npsDistribution = Object.entries(counts).map(([rating, count]) => ({ rating, count }));
         const avgNps = rows.length > 0 ? Math.round((sum / rows.length) * 10) / 10 : 0;
 
-        // Get all faculties and semesters for filters
+        // Get all semesters for filter
         const { data: allRows } = await supabase
             .from('feedback_responses')
-            .select('faculty_id, semester_code')
+            .select('semester_code')
             .eq('feedback_type', 'nps');
 
-        const faculties = [...new Set((allRows ?? []).map(r => r.faculty_id).filter(Boolean))] as string[];
         const semesters = [...new Set((allRows ?? []).map(r => r.semester_code))].sort();
 
-        setStats({ npsDistribution, avgNps, totalResponses: rows.length, faculties, semesters });
+        setStats({ npsDistribution, avgNps, totalResponses: rows.length, semesters });
         setLoading(false);
     }
 

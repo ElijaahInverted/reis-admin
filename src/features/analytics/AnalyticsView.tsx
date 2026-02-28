@@ -60,11 +60,10 @@ function SimpleTrendChart({ data }: { data: { date: string; count: number }[] })
 
 export default function AnalyticsView() {
     const [days, setDays] = useState(30);
-    const [facultyFilter, setFacultyFilter] = useState<string>();
     const [semesterFilter, setSemesterFilter] = useState<string>();
 
     const { stats: usage, loading: usageLoading } = useUsageStats(days);
-    const { stats: feedback, loading: feedbackLoading } = useFeedbackStats(facultyFilter, semesterFilter);
+    const { stats: feedback, loading: feedbackLoading } = useFeedbackStats(semesterFilter);
 
     if (usageLoading || feedbackLoading) {
         return (
@@ -118,18 +117,6 @@ export default function AnalyticsView() {
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-bold">NPS Hodnocení</h2>
                     <div className="flex gap-2">
-                        {feedback?.faculties && feedback.faculties.length > 0 && (
-                            <select
-                                className="select select-sm select-bordered"
-                                value={facultyFilter ?? ''}
-                                onChange={e => setFacultyFilter(e.target.value || undefined)}
-                            >
-                                <option value="">Všechny fakulty</option>
-                                {feedback.faculties.map(f => (
-                                    <option key={f} value={f}>{f}</option>
-                                ))}
-                            </select>
-                        )}
                         {feedback?.semesters && feedback.semesters.length > 0 && (
                             <select
                                 className="select select-sm select-bordered"
